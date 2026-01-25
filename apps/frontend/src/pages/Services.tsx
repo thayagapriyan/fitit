@@ -1,5 +1,7 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { useServiceProfiles } from '../hooks';
 import { SERVICE_PROS } from '../constants/originalConstants';
 import { UserRole, ServiceProfile } from '../types';
 
@@ -10,6 +12,10 @@ interface LayoutContext {
 
 const Services: React.FC = () => {
   const { role } = useOutletContext<LayoutContext>();
+  const { data: profiles, loading, error } = useServiceProfiles();
+  
+  // Fallback to constants if API fails or is loading
+  const displayProfiles = profiles || SERVICE_PROS;
 
   const ServiceCard = ({ profile }: { profile: ServiceProfile }) => (
     <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 p-6 flex items-start gap-4">
@@ -50,8 +56,27 @@ const Services: React.FC = () => {
           Vetted experts ready to tackle your electrical, plumbing, and carpentry needs.
         </p>
       </div>
+      
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="animate-spin text-blue-600" size={32} />
+          <span className="ml-2 text-gray-500">Loading professionals...</span>
+        </div>
+      )}
+      
+      {/* Error State */}
+      {error && !loading && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center gap-3">
+          <AlertCircle className="text-yellow-600" size={20} />
+          <span className="text-yellow-700 text-sm">
+            Unable to fetch live data. Showing cached professionals.
+          </span>
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {SERVICE_PROS.map(profile => (
+        {displayProfiles.map(profile => (
           <ServiceCard key={profile.id} profile={profile} />
         ))}
       </div>

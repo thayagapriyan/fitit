@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Briefcase } from 'lucide-react';
+import { Briefcase, Loader2, AlertCircle } from 'lucide-react';
+import { useServiceRequests, useOpenRequests } from '../hooks';
+import { serviceRequestsApi } from '../services/api';
 import { INITIAL_REQUESTS } from '../constants/originalConstants';
 import { UserRole, ServiceRequest } from '../types';
 
@@ -11,15 +13,31 @@ interface LayoutContext {
 
 const Dashboard: React.FC = () => {
   const { role } = useOutletContext<LayoutContext>();
-  const [requests, setRequests] = useState<ServiceRequest[]>(INITIAL_REQUESTS);
+  const { data: apiRequests, loading, error, refetch } = useServiceRequests();
+  const [localRequests, setLocalRequests] = useState<ServiceRequest[]>([]);
 
-  const acceptJob = (id: string) => {
-    setRequests(prev =>
-      prev.map(req => (req.id === id ? { ...req, status: 'IN_PROGRESS' as const } : req))
-    );
+  // Combine API data with local changes
+  const requests = apiRequests || INITIAL_REQUESTS;
+
+  useEffect(() => {
+    setLocalRequests(requests);
+  }, [requests]);
+
+  const acceptJob = async (id: string) => {
+    try {
+      // Try to update via API
+      await serviceRequestsApi.acceptJob(id, 'current-professional');
+      // Refresh data
+      refetch();
+    } catch {
+      // Fallback to local state
+      setLocalRequests(prev =>
+        prev.map(req => (req.id === id ? { ...req, status: 'IN_PROGRESS' as const } : req))
+      );
+    }
   };
 
-  const postJob = (desc: string, cat: string) => {
+  const postJob = async (desc: string, cat: string) => {
     const newReq: ServiceRequest = {
       id: Date.now().toString(),
       customerId: 'current-user',
@@ -29,8 +47,22 @@ const Dashboard: React.FC = () => {
       status: 'OPEN',
       date: new Date().toLocaleDateString(),
     };
-    setRequests([newReq, ...requests]);
-    alert('Job Posted Successfully!');
+
+    try {
+      // Try to create via API
+      await serviceRequestsApi.create({
+        customerId: 'current-user',
+        customerName: 'You',
+        description: desc,
+        category: cat,
+      });
+      refetch();
+      alert('Job Posted Successfully!');
+    } catch {
+      // Fallback to local state
+      setLocalRequests(prev => [newReq, ...prev]);
+      alert('Job Posted Successfully! (Local only)');
+    }
   };
 
   const RequestCard = ({ request }: { request: ServiceRequest }) => (
@@ -60,7 +92,27 @@ const Dashboard: React.FC = () => {
     </div>
   );
 
+  // Loading indicator
+  const LoadingIndicator = () => (
+    <div className="flex items-center justify-center py-8">
+      <Loader2 className="animate-spin text-blue-600" size={32} />
+      <span className="ml-2 text-gray-500">Loading requests...</span>
+    </div>
+  );
+
+  // Error banner
+  const ErrorBanner = () => (
+    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center gap-3">
+      <AlertCircle className="text-yellow-600" size={20} />
+      <span className="text-yellow-700 text-sm">
+        Unable to fetch live data. Working in offline mode.
+      </span>
+    </div>
+  );
+
   if (role === UserRole.PROFESSIONAL) {
+    const openRequests = localRequests.filter(r => r.status === 'OPEN');
+    
     return (
       <div className="space-y-6">
         <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-lg flex justify-between items-center">
@@ -69,18 +121,22 @@ const Dashboard: React.FC = () => {
             <p className="text-gray-400">Welcome back! You have open requests.</p>
           </div>
           <div className="bg-white/10 px-4 py-2 rounded-lg">
-            <span className="text-2xl font-bold">{requests.filter(r => r.status === 'OPEN').length}</span>
+            <span className="text-2xl font-bold">{openRequests.length}</span>
             <span className="text-sm ml-2 opacity-80">New Leads</span>
           </div>
         </div>
+        
+        {loading && <LoadingIndicator />}
+        {error && !loading && <ErrorBanner />}
+        
         <div className="grid gap-6">
           <h3 className="font-bold text-lg text-gray-800">Available Jobs</h3>
-          {requests.length === 0 ? (
+          {localRequests.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300 text-gray-500">
               No open requests at the moment. Check back later!
             </div>
           ) : (
-            requests.map(req => <RequestCard key={req.id} request={req} />)
+            localRequests.map(req => <RequestCard key={req.id} request={req} />)
           )}
         </div>
       </div>
@@ -90,6 +146,9 @@ const Dashboard: React.FC = () => {
   // Customer Dashboard
   return (
     <div className="space-y-6">
+      {loading && <LoadingIndicator />}
+      {error && !loading && <ErrorBanner />}
+      
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Post a Service Request</h2>
         <form
@@ -136,7 +195,7 @@ const Dashboard: React.FC = () => {
 
       <div className="space-y-4">
         <h3 className="font-bold text-lg text-gray-800">My Requests</h3>
-        {requests
+        {localRequests
           .filter(r => r.customerId === 'current-user' || r.customerId === 'You')
           .map(req => (
             <div
@@ -161,7 +220,7 @@ const Dashboard: React.FC = () => {
               </span>
             </div>
           ))}
-        {requests.filter(r => r.customerId === 'current-user' || r.customerId === 'You').length === 0 && (
+        {localRequests.filter(r => r.customerId === 'current-user' || r.customerId === 'You').length === 0 && (
           <p className="text-gray-500 text-sm">You haven't posted any requests yet.</p>
         )}
       </div>
