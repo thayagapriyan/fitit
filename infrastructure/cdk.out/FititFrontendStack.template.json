@@ -1,0 +1,848 @@
+{
+ "Description": "FitIt Frontend Infrastructure - ECR, Fargate, ALB",
+ "Resources": {
+  "FrontendRepoF80FCC01": {
+   "Type": "AWS::ECR::Repository",
+   "Properties": {
+    "ImageScanningConfiguration": {
+     "ScanOnPush": true
+    },
+    "LifecyclePolicy": {
+     "LifecyclePolicyText": "{\"rules\":[{\"rulePriority\":1,\"description\":\"Keep only last 10 images\",\"selection\":{\"tagStatus\":\"any\",\"countType\":\"imageCountMoreThan\",\"countNumber\":10},\"action\":{\"type\":\"expire\"}}]}"
+    },
+    "RepositoryName": "fitit-frontend",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "production"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "CDK"
+     },
+     {
+      "Key": "Project",
+      "Value": "FitIt"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendRepo/Resource"
+   }
+  },
+  "FrontendCluster268760AC": {
+   "Type": "AWS::ECS::Cluster",
+   "Properties": {
+    "ClusterName": "fitit-frontend-cluster",
+    "ClusterSettings": [
+     {
+      "Name": "containerInsights",
+      "Value": "enabled"
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "production"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "CDK"
+     },
+     {
+      "Key": "Project",
+      "Value": "FitIt"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendCluster/Resource"
+   }
+  },
+  "FrontendTaskTaskRole1362EC30": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "production"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "CDK"
+     },
+     {
+      "Key": "Project",
+      "Value": "FitIt"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendTask/TaskRole/Resource"
+   }
+  },
+  "FrontendTask1FBAEF7E": {
+   "Type": "AWS::ECS::TaskDefinition",
+   "Properties": {
+    "ContainerDefinitions": [
+     {
+      "Environment": [
+       {
+        "Name": "VITE_API_BASE_URL",
+        "Value": {
+         "Fn::ImportValue": "FititBackendStack:ExportsOutputFnGetAttBackendApiED3D8698ApiEndpoint3439E0AF"
+        }
+       }
+      ],
+      "Essential": true,
+      "HealthCheck": {
+       "Command": [
+        "CMD-SHELL",
+        "wget --quiet --tries=1 --spider http://localhost/health || exit 1"
+       ],
+       "Interval": 30,
+       "Retries": 3,
+       "StartPeriod": 60,
+       "Timeout": 5
+      },
+      "Image": "nginx:alpine",
+      "LogConfiguration": {
+       "LogDriver": "awslogs",
+       "Options": {
+        "awslogs-group": {
+         "Ref": "FrontendLogGroupCE4F14E0"
+        },
+        "awslogs-stream-prefix": "fitit-frontend",
+        "awslogs-region": "us-east-2"
+       }
+      },
+      "Name": "fitit-frontend",
+      "PortMappings": [
+       {
+        "ContainerPort": 80,
+        "Protocol": "tcp"
+       }
+      ]
+     }
+    ],
+    "Cpu": "256",
+    "ExecutionRoleArn": {
+     "Fn::GetAtt": [
+      "FrontendTaskExecutionRole408DF79F",
+      "Arn"
+     ]
+    },
+    "Family": "fitit-frontend",
+    "Memory": "512",
+    "NetworkMode": "awsvpc",
+    "RequiresCompatibilities": [
+     "FARGATE"
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "production"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "CDK"
+     },
+     {
+      "Key": "Project",
+      "Value": "FitIt"
+     }
+    ],
+    "TaskRoleArn": {
+     "Fn::GetAtt": [
+      "FrontendTaskTaskRole1362EC30",
+      "Arn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendTask/Resource"
+   }
+  },
+  "FrontendTaskExecutionRole408DF79F": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "production"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "CDK"
+     },
+     {
+      "Key": "Project",
+      "Value": "FitIt"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendTask/ExecutionRole/Resource"
+   }
+  },
+  "FrontendTaskExecutionRoleDefaultPolicyC7FD0E65": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "FrontendLogGroupCE4F14E0",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "FrontendTaskExecutionRoleDefaultPolicyC7FD0E65",
+    "Roles": [
+     {
+      "Ref": "FrontendTaskExecutionRole408DF79F"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendTask/ExecutionRole/DefaultPolicy/Resource"
+   }
+  },
+  "FrontendLogGroupCE4F14E0": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "LogGroupName": "/ecs/fitit-frontend",
+    "RetentionInDays": 30,
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "production"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "CDK"
+     },
+     {
+      "Key": "Project",
+      "Value": "FitIt"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendLogGroup/Resource"
+   }
+  },
+  "FrontendServiceLBC4FCC036": {
+   "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+   "Properties": {
+    "LoadBalancerAttributes": [
+     {
+      "Key": "deletion_protection.enabled",
+      "Value": "false"
+     }
+    ],
+    "Scheme": "internet-facing",
+    "SecurityGroups": [
+     {
+      "Fn::GetAtt": [
+       "FrontendServiceLBSecurityGroup83DC324B",
+       "GroupId"
+      ]
+     }
+    ],
+    "Subnets": [
+     {
+      "Fn::ImportValue": "FititNetworkStack:ExportsOutputRefFititVpcPublicSubnet1Subnet9DBBA252EA1342EF"
+     },
+     {
+      "Fn::ImportValue": "FititNetworkStack:ExportsOutputRefFititVpcPublicSubnet2Subnet378C92C9D4FD8999"
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "production"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "CDK"
+     },
+     {
+      "Key": "Project",
+      "Value": "FitIt"
+     }
+    ],
+    "Type": "application"
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendService/LB/Resource"
+   }
+  },
+  "FrontendServiceLBSecurityGroup83DC324B": {
+   "Type": "AWS::EC2::SecurityGroup",
+   "Properties": {
+    "GroupDescription": "Automatically created Security Group for ELB FititFrontendStackFrontendServiceLB263EFEBC",
+    "SecurityGroupIngress": [
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow from anyone on port 80",
+      "FromPort": 80,
+      "IpProtocol": "tcp",
+      "ToPort": 80
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "production"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "CDK"
+     },
+     {
+      "Key": "Project",
+      "Value": "FitIt"
+     }
+    ],
+    "VpcId": {
+     "Fn::ImportValue": "FititNetworkStack:ExportsOutputRefFititVpcFE0F8966EC124A29"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendService/LB/SecurityGroup/Resource"
+   }
+  },
+  "FrontendServiceLBSecurityGrouptoFititFrontendStackFrontendServiceSecurityGroup75EFAED580AAF43898": {
+   "Type": "AWS::EC2::SecurityGroupEgress",
+   "Properties": {
+    "Description": "Load balancer to target",
+    "DestinationSecurityGroupId": {
+     "Fn::GetAtt": [
+      "FrontendServiceSecurityGroupFD135B1B",
+      "GroupId"
+     ]
+    },
+    "FromPort": 80,
+    "GroupId": {
+     "Fn::GetAtt": [
+      "FrontendServiceLBSecurityGroup83DC324B",
+      "GroupId"
+     ]
+    },
+    "IpProtocol": "tcp",
+    "ToPort": 80
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendService/LB/SecurityGroup/to FititFrontendStackFrontendServiceSecurityGroup75EFAED5:80"
+   }
+  },
+  "FrontendServiceLBPublicListener50DF6FDC": {
+   "Type": "AWS::ElasticLoadBalancingV2::Listener",
+   "Properties": {
+    "DefaultActions": [
+     {
+      "TargetGroupArn": {
+       "Ref": "FrontendServiceLBPublicListenerECSGroup56B2E0A8"
+      },
+      "Type": "forward"
+     }
+    ],
+    "LoadBalancerArn": {
+     "Ref": "FrontendServiceLBC4FCC036"
+    },
+    "Port": 80,
+    "Protocol": "HTTP"
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendService/LB/PublicListener/Resource"
+   }
+  },
+  "FrontendServiceLBPublicListenerECSGroup56B2E0A8": {
+   "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+   "Properties": {
+    "HealthCheckIntervalSeconds": 30,
+    "HealthCheckPath": "/health",
+    "HealthCheckTimeoutSeconds": 5,
+    "HealthyThresholdCount": 2,
+    "Matcher": {
+     "HttpCode": "200"
+    },
+    "Port": 80,
+    "Protocol": "HTTP",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "production"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "CDK"
+     },
+     {
+      "Key": "Project",
+      "Value": "FitIt"
+     }
+    ],
+    "TargetGroupAttributes": [
+     {
+      "Key": "stickiness.enabled",
+      "Value": "false"
+     }
+    ],
+    "TargetType": "ip",
+    "UnhealthyThresholdCount": 3,
+    "VpcId": {
+     "Fn::ImportValue": "FititNetworkStack:ExportsOutputRefFititVpcFE0F8966EC124A29"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendService/LB/PublicListener/ECSGroup/Resource"
+   }
+  },
+  "FrontendService31F14A33": {
+   "Type": "AWS::ECS::Service",
+   "Properties": {
+    "Cluster": {
+     "Ref": "FrontendCluster268760AC"
+    },
+    "DeploymentConfiguration": {
+     "Alarms": {
+      "AlarmNames": [],
+      "Enable": false,
+      "Rollback": false
+     },
+     "DeploymentCircuitBreaker": {
+      "Enable": true,
+      "Rollback": true
+     },
+     "MaximumPercent": 200,
+     "MinimumHealthyPercent": 50
+    },
+    "DeploymentController": {
+     "Type": "ECS"
+    },
+    "DesiredCount": 2,
+    "EnableECSManagedTags": false,
+    "HealthCheckGracePeriodSeconds": 60,
+    "LaunchType": "FARGATE",
+    "LoadBalancers": [
+     {
+      "ContainerName": "fitit-frontend",
+      "ContainerPort": 80,
+      "TargetGroupArn": {
+       "Ref": "FrontendServiceLBPublicListenerECSGroup56B2E0A8"
+      }
+     }
+    ],
+    "NetworkConfiguration": {
+     "AwsvpcConfiguration": {
+      "AssignPublicIp": "DISABLED",
+      "SecurityGroups": [
+       {
+        "Fn::GetAtt": [
+         "FrontendServiceSecurityGroupFD135B1B",
+         "GroupId"
+        ]
+       }
+      ],
+      "Subnets": [
+       {
+        "Fn::ImportValue": "FititNetworkStack:ExportsOutputRefFititVpcPrivateSubnet1Subnet94795FC7002819D6"
+       },
+       {
+        "Fn::ImportValue": "FititNetworkStack:ExportsOutputRefFititVpcPrivateSubnet2SubnetB133FD13EAE36540"
+       }
+      ]
+     }
+    },
+    "ServiceName": "fitit-frontend-service",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "production"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "CDK"
+     },
+     {
+      "Key": "Project",
+      "Value": "FitIt"
+     }
+    ],
+    "TaskDefinition": {
+     "Ref": "FrontendTask1FBAEF7E"
+    }
+   },
+   "DependsOn": [
+    "FrontendServiceLBPublicListenerECSGroup56B2E0A8",
+    "FrontendServiceLBPublicListener50DF6FDC",
+    "FrontendTaskTaskRole1362EC30"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendService/Service/Service"
+   }
+  },
+  "FrontendServiceSecurityGroupFD135B1B": {
+   "Type": "AWS::EC2::SecurityGroup",
+   "Properties": {
+    "GroupDescription": "FititFrontendStack/FrontendService/Service/SecurityGroup",
+    "SecurityGroupEgress": [
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow all outbound traffic by default",
+      "IpProtocol": "-1"
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "production"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "CDK"
+     },
+     {
+      "Key": "Project",
+      "Value": "FitIt"
+     }
+    ],
+    "VpcId": {
+     "Fn::ImportValue": "FititNetworkStack:ExportsOutputRefFititVpcFE0F8966EC124A29"
+    }
+   },
+   "DependsOn": [
+    "FrontendTaskTaskRole1362EC30"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendService/Service/SecurityGroup/Resource"
+   }
+  },
+  "FrontendServiceSecurityGroupfromFititFrontendStackFrontendServiceLBSecurityGroup0E0E6CFE808B33411F": {
+   "Type": "AWS::EC2::SecurityGroupIngress",
+   "Properties": {
+    "Description": "Load balancer to target",
+    "FromPort": 80,
+    "GroupId": {
+     "Fn::GetAtt": [
+      "FrontendServiceSecurityGroupFD135B1B",
+      "GroupId"
+     ]
+    },
+    "IpProtocol": "tcp",
+    "SourceSecurityGroupId": {
+     "Fn::GetAtt": [
+      "FrontendServiceLBSecurityGroup83DC324B",
+      "GroupId"
+     ]
+    },
+    "ToPort": 80
+   },
+   "DependsOn": [
+    "FrontendTaskTaskRole1362EC30"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendService/Service/SecurityGroup/from FititFrontendStackFrontendServiceLBSecurityGroup0E0E6CFE:80"
+   }
+  },
+  "FrontendServiceTaskCountTargetF2B76C23": {
+   "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+   "Properties": {
+    "MaxCapacity": 10,
+    "MinCapacity": 2,
+    "ResourceId": {
+     "Fn::Join": [
+      "",
+      [
+       "service/",
+       {
+        "Ref": "FrontendCluster268760AC"
+       },
+       "/",
+       {
+        "Fn::GetAtt": [
+         "FrontendService31F14A33",
+         "Name"
+        ]
+       }
+      ]
+     ]
+    },
+    "RoleARN": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":iam::224193574799:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
+      ]
+     ]
+    },
+    "ScalableDimension": "ecs:service:DesiredCount",
+    "ServiceNamespace": "ecs"
+   },
+   "DependsOn": [
+    "FrontendTaskTaskRole1362EC30"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendService/Service/TaskCount/Target/Resource"
+   }
+  },
+  "FrontendServiceTaskCountTargetCpuScalingDDF5E7A0": {
+   "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+   "Properties": {
+    "PolicyName": "FititFrontendStackFrontendServiceTaskCountTargetCpuScaling645336CC",
+    "PolicyType": "TargetTrackingScaling",
+    "ScalingTargetId": {
+     "Ref": "FrontendServiceTaskCountTargetF2B76C23"
+    },
+    "TargetTrackingScalingPolicyConfiguration": {
+     "PredefinedMetricSpecification": {
+      "PredefinedMetricType": "ECSServiceAverageCPUUtilization"
+     },
+     "ScaleInCooldown": 60,
+     "ScaleOutCooldown": 60,
+     "TargetValue": 70
+    }
+   },
+   "DependsOn": [
+    "FrontendTaskTaskRole1362EC30"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendService/Service/TaskCount/Target/CpuScaling/Resource"
+   }
+  },
+  "FrontendServiceTaskCountTargetMemoryScalingE3D912AB": {
+   "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+   "Properties": {
+    "PolicyName": "FititFrontendStackFrontendServiceTaskCountTargetMemoryScalingE43F5B92",
+    "PolicyType": "TargetTrackingScaling",
+    "ScalingTargetId": {
+     "Ref": "FrontendServiceTaskCountTargetF2B76C23"
+    },
+    "TargetTrackingScalingPolicyConfiguration": {
+     "PredefinedMetricSpecification": {
+      "PredefinedMetricType": "ECSServiceAverageMemoryUtilization"
+     },
+     "ScaleInCooldown": 60,
+     "ScaleOutCooldown": 60,
+     "TargetValue": 70
+    }
+   },
+   "DependsOn": [
+    "FrontendTaskTaskRole1362EC30"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/FrontendService/Service/TaskCount/Target/MemoryScaling/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/31Sy27CMBD8lt6DS1Op95Y+VAmpVcIdLc5iLTF2ZK9ByMq/V04ICbTqaWdnZ+zxIxf545OY38HRz2RVzzRtRCwZZJ3B0a8jSidigY31xNadssXWjF2bofQiLnTwjC7NBvgOTgHjCnz9ilsyxGRNEtwy1jCQQTfhzt4S3YEkJtMASwkaNrpbdmGD4TYj2ItYWN3puvptNckuaI/aTFvlRVxa9eFsaNJkwN0B1g0wozNePDeNJgkpxdJC9QIajMTqJhBq8ExSW6g2nYKMOuQi/u12/X6Tfqojz2jOmgFP5itwCvkSe9Km5LmIJcrgiE8Xyf/Em3Lo/S/603R8m8G4NQS2XoImo0QcLz4F6PzXTF9WDmRNRpW9b3yJK6JtE/UVuAmcFehtcBLbzNgKxc7fH/K5eEhfcueJZi4Ypj2Koq8/bj9vgq8CAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititFrontendStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "FrontendServiceLoadBalancerDNSAA892DED": {
+   "Value": {
+    "Fn::GetAtt": [
+     "FrontendServiceLBC4FCC036",
+     "DNSName"
+    ]
+   }
+  },
+  "FrontendServiceServiceURL94B0BA88": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "http://",
+      {
+       "Fn::GetAtt": [
+        "FrontendServiceLBC4FCC036",
+        "DNSName"
+       ]
+      }
+     ]
+    ]
+   }
+  },
+  "LoadBalancerDnsName": {
+   "Description": "Frontend Load Balancer DNS Name",
+   "Value": {
+    "Fn::GetAtt": [
+     "FrontendServiceLBC4FCC036",
+     "DNSName"
+    ]
+   },
+   "Export": {
+    "Name": "FititFrontendUrl"
+   }
+  },
+  "LoadBalancerUrl": {
+   "Description": "Frontend URL",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "http://",
+      {
+       "Fn::GetAtt": [
+        "FrontendServiceLBC4FCC036",
+        "DNSName"
+       ]
+      }
+     ]
+    ]
+   }
+  },
+  "EcrRepositoryUri": {
+   "Description": "ECR Repository URI",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      {
+       "Fn::Select": [
+        4,
+        {
+         "Fn::Split": [
+          ":",
+          {
+           "Fn::GetAtt": [
+            "FrontendRepoF80FCC01",
+            "Arn"
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      ".dkr.ecr.",
+      {
+       "Fn::Select": [
+        3,
+        {
+         "Fn::Split": [
+          ":",
+          {
+           "Fn::GetAtt": [
+            "FrontendRepoF80FCC01",
+            "Arn"
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      ".",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "FrontendRepoF80FCC01"
+      }
+     ]
+    ]
+   },
+   "Export": {
+    "Name": "FititFrontendEcrUri"
+   }
+  },
+  "EcsClusterName": {
+   "Description": "ECS Cluster Name",
+   "Value": {
+    "Ref": "FrontendCluster268760AC"
+   }
+  },
+  "EcsServiceName": {
+   "Description": "ECS Service Name",
+   "Value": {
+    "Fn::GetAtt": [
+     "FrontendService31F14A33",
+     "Name"
+    ]
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

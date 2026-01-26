@@ -1,0 +1,21 @@
+{
+  "version": "48.0.0",
+  "files": {
+    "651c2263810a9cb8b13fccad7b7e7582dbc6a8be98e13ff2b68c077bc2dec528": {
+      "displayName": "FititDatabaseStack Template",
+      "source": {
+        "path": "FititDatabaseStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "224193574799-us-east-2-5ad1f139": {
+          "bucketName": "cdk-hnb659fds-assets-224193574799-us-east-2",
+          "objectKey": "651c2263810a9cb8b13fccad7b7e7582dbc6a8be98e13ff2b68c077bc2dec528.json",
+          "region": "us-east-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::224193574799:role/cdk-hnb659fds-file-publishing-role-224193574799-us-east-2"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

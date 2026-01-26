@@ -1,0 +1,21 @@
+{
+  "version": "48.0.0",
+  "files": {
+    "b0bf983d3181f9bff6050e9924420fefd1320ddb3005597d040f67f239fc1633": {
+      "displayName": "FititFrontendStack Template",
+      "source": {
+        "path": "FititFrontendStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "224193574799-us-east-2-3dc84538": {
+          "bucketName": "cdk-hnb659fds-assets-224193574799-us-east-2",
+          "objectKey": "b0bf983d3181f9bff6050e9924420fefd1320ddb3005597d040f67f239fc1633.json",
+          "region": "us-east-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::224193574799:role/cdk-hnb659fds-file-publishing-role-224193574799-us-east-2"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

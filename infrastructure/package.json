@@ -1,0 +1,29 @@
+{
+  "name": "@fitit/infrastructure",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "synth": "cdk synth",
+    "deploy": "cdk deploy --all",
+    "deploy:network": "cdk deploy FititNetworkStack",
+    "deploy:database": "cdk deploy FititDatabaseStack",
+    "deploy:backend": "cdk deploy FititBackendStack",
+    "deploy:frontend": "cdk deploy FititFrontendStack",
+    "destroy": "cdk destroy --all",
+    "diff": "cdk diff",
+    "bootstrap": "cdk bootstrap"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.170.0",
+    "constructs": "^10.3.0",
+    "source-map-support": "^0.5.21"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "aws-cdk": "^2.170.0",
+    "typescript": "~5.8.2"
+  }
+}

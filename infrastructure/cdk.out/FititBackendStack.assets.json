@@ -1,0 +1,36 @@
+{
+  "version": "48.0.0",
+  "files": {
+    "b31d1e242df187fbab242c6c697ca79ebc9c2f67167c384aa9cb1b9821c82894": {
+      "displayName": "BackendLambda/Code",
+      "source": {
+        "path": "C:\\Priyan\\VSC\\OWN\\fitit\\apps\\backend",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "224193574799-us-east-2-cd30f51a": {
+          "bucketName": "cdk-hnb659fds-assets-224193574799-us-east-2",
+          "objectKey": "b31d1e242df187fbab242c6c697ca79ebc9c2f67167c384aa9cb1b9821c82894.zip",
+          "region": "us-east-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::224193574799:role/cdk-hnb659fds-file-publishing-role-224193574799-us-east-2"
+        }
+      }
+    },
+    "9ace5ffaf65e54adf9b10c8a0be0f4e707fb60f46659239587243f5cdfcbf1fb": {
+      "displayName": "FititBackendStack Template",
+      "source": {
+        "path": "FititBackendStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "224193574799-us-east-2-48bdea7d": {
+          "bucketName": "cdk-hnb659fds-assets-224193574799-us-east-2",
+          "objectKey": "9ace5ffaf65e54adf9b10c8a0be0f4e707fb60f46659239587243f5cdfcbf1fb.json",
+          "region": "us-east-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::224193574799:role/cdk-hnb659fds-file-publishing-role-224193574799-us-east-2"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

@@ -1,0 +1,628 @@
+{
+ "Description": "FitIt Backend Infrastructure - Lambda, API Gateway",
+ "Resources": {
+  "BackendLogGroupDA10F1B2": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "LogGroupName": "/aws/lambda/fitit-backend",
+    "RetentionInDays": 30,
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "production"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "CDK"
+     },
+     {
+      "Key": "Project",
+      "Value": "FitIt"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "FititBackendStack/BackendLogGroup/Resource"
+   }
+  },
+  "BackendLambdaServiceRole98E4BC89": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "production"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "CDK"
+     },
+     {
+      "Key": "Project",
+      "Value": "FitIt"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititBackendStack/BackendLambda/ServiceRole/Resource"
+   }
+  },
+  "BackendLambdaServiceRoleDefaultPolicy922C20D8": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "FititDatabaseStack:ExportsOutputFnGetAttProductsTable241ADBFFArn55D06E2D"
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::ImportValue": "FititDatabaseStack:ExportsOutputFnGetAttProductsTable241ADBFFArn55D06E2D"
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "FititDatabaseStack:ExportsOutputFnGetAttProductsTable241ADBFFArn55D06E2D"
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::ImportValue": "FititDatabaseStack:ExportsOutputFnGetAttProductsTable241ADBFFArn55D06E2D"
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "FititDatabaseStack:ExportsOutputFnGetAttServiceProfilesTable2FE6FB96Arn05A44671"
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::ImportValue": "FititDatabaseStack:ExportsOutputFnGetAttServiceProfilesTable2FE6FB96Arn05A44671"
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "FititDatabaseStack:ExportsOutputFnGetAttServiceProfilesTable2FE6FB96Arn05A44671"
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::ImportValue": "FititDatabaseStack:ExportsOutputFnGetAttServiceProfilesTable2FE6FB96Arn05A44671"
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "FititDatabaseStack:ExportsOutputFnGetAttServiceRequestsTable5933C500ArnB899F6D6"
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::ImportValue": "FititDatabaseStack:ExportsOutputFnGetAttServiceRequestsTable5933C500ArnB899F6D6"
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "FititDatabaseStack:ExportsOutputFnGetAttServiceRequestsTable5933C500ArnB899F6D6"
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::ImportValue": "FititDatabaseStack:ExportsOutputFnGetAttServiceRequestsTable5933C500ArnB899F6D6"
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::ImportValue": "FititDatabaseStack:ExportsOutputFnGetAttChatTable7A2D1C24Arn2A377C52"
+       }
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::ImportValue": "FititDatabaseStack:ExportsOutputFnGetAttChatTable7A2D1C24Arn2A377C52"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "BackendLambdaServiceRoleDefaultPolicy922C20D8",
+    "Roles": [
+     {
+      "Ref": "BackendLambdaServiceRole98E4BC89"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititBackendStack/BackendLambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "BackendLambdaD93C7B96": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "arm64"
+    ],
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-224193574799-us-east-2",
+     "S3Key": "b31d1e242df187fbab242c6c697ca79ebc9c2f67167c384aa9cb1b9821c82894.zip"
+    },
+    "Description": "FitIt Backend API - Hono.js on Lambda",
+    "Environment": {
+     "Variables": {
+      "NODE_ENV": "production",
+      "DYNAMODB_PRODUCTS_TABLE": {
+       "Fn::ImportValue": "FititDatabaseStack:ExportsOutputRefProductsTable241ADBFF4DFBD40D"
+      },
+      "DYNAMODB_SERVICE_PROFILES_TABLE": {
+       "Fn::ImportValue": "FititDatabaseStack:ExportsOutputRefServiceProfilesTable2FE6FB96FC493867"
+      },
+      "DYNAMODB_SERVICE_REQUESTS_TABLE": {
+       "Fn::ImportValue": "FititDatabaseStack:ExportsOutputRefServiceRequestsTable5933C500D17E6C08"
+      },
+      "DYNAMODB_CHAT_TABLE": {
+       "Fn::ImportValue": "FititDatabaseStack:ExportsOutputRefChatTable7A2D1C242A7F282B"
+      }
+     }
+    },
+    "FunctionName": "fitit-backend",
+    "Handler": "lambda.handler",
+    "LoggingConfig": {
+     "LogGroup": {
+      "Ref": "BackendLogGroupDA10F1B2"
+     }
+    },
+    "MemorySize": 512,
+    "Role": {
+     "Fn::GetAtt": [
+      "BackendLambdaServiceRole98E4BC89",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "production"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "CDK"
+     },
+     {
+      "Key": "Project",
+      "Value": "FitIt"
+     }
+    ],
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "BackendLambdaServiceRoleDefaultPolicy922C20D8",
+    "BackendLambdaServiceRole98E4BC89"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "FititBackendStack/BackendLambda/Resource",
+    "aws:asset:path": "C:\\Priyan\\VSC\\OWN\\fitit\\apps\\backend",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "BackendApiED3D8698": {
+   "Type": "AWS::ApiGatewayV2::Api",
+   "Properties": {
+    "CorsConfiguration": {
+     "AllowHeaders": [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With"
+     ],
+     "AllowMethods": [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS"
+     ],
+     "AllowOrigins": [
+      "*"
+     ],
+     "MaxAge": 86400
+    },
+    "Description": "FitIt Backend HTTP API",
+    "Name": "fitit-backend-api",
+    "ProtocolType": "HTTP",
+    "Tags": {
+     "Environment": "production",
+     "ManagedBy": "CDK",
+     "Project": "FitIt"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititBackendStack/BackendApi/Resource"
+   }
+  },
+  "BackendApiDefaultStage395BF519": {
+   "Type": "AWS::ApiGatewayV2::Stage",
+   "Properties": {
+    "ApiId": {
+     "Ref": "BackendApiED3D8698"
+    },
+    "AutoDeploy": true,
+    "StageName": "$default",
+    "Tags": {
+     "Environment": "production",
+     "ManagedBy": "CDK",
+     "Project": "FitIt"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititBackendStack/BackendApi/DefaultStage/Resource"
+   }
+  },
+  "BackendApiANYproxyLambdaIntegration6EEA0A29": {
+   "Type": "AWS::ApiGatewayV2::Integration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "BackendApiED3D8698"
+    },
+    "IntegrationType": "AWS_PROXY",
+    "IntegrationUri": {
+     "Fn::GetAtt": [
+      "BackendLambdaD93C7B96",
+      "Arn"
+     ]
+    },
+    "PayloadFormatVersion": "2.0"
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititBackendStack/BackendApi/ANY--{proxy+}/LambdaIntegration/Resource"
+   }
+  },
+  "BackendApiANYproxyLambdaIntegrationPermissionB3F4B9C7": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "BackendLambdaD93C7B96",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-2:224193574799:",
+       {
+        "Ref": "BackendApiED3D8698"
+       },
+       "/*/*/{proxy+}"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititBackendStack/BackendApi/ANY--{proxy+}/LambdaIntegration-Permission"
+   }
+  },
+  "BackendApiANYproxyB69EEEF2": {
+   "Type": "AWS::ApiGatewayV2::Route",
+   "Properties": {
+    "ApiId": {
+     "Ref": "BackendApiED3D8698"
+    },
+    "AuthorizationType": "NONE",
+    "RouteKey": "ANY /{proxy+}",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "BackendApiANYproxyLambdaIntegration6EEA0A29"
+       }
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititBackendStack/BackendApi/ANY--{proxy+}/Resource"
+   }
+  },
+  "BackendApiGETLambdaIntegrationPermissionC4021679": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "BackendLambdaD93C7B96",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-2:224193574799:",
+       {
+        "Ref": "BackendApiED3D8698"
+       },
+       "/*/*/"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititBackendStack/BackendApi/GET--/LambdaIntegration-Permission"
+   }
+  },
+  "BackendApiGETEAAFEF9C": {
+   "Type": "AWS::ApiGatewayV2::Route",
+   "Properties": {
+    "ApiId": {
+     "Ref": "BackendApiED3D8698"
+    },
+    "AuthorizationType": "NONE",
+    "RouteKey": "GET /",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "BackendApiANYproxyLambdaIntegration6EEA0A29"
+       }
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititBackendStack/BackendApi/GET--/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12Q3WrDMAyFn2X3jtYl0Pt2sHUwaEkfoKiJZ9Q4dojkhmL87sMOhbGr8+noF9VQN1vYvODCVdcPlaUrxLNgNyhc+BKtNwzx25vP2YdJvf+4Jydlcbz2CPEjuE7Iu5z9yyc9j8RM3iVFOEJsvdU5UfTkLXWPUlcoKW4uyKyFYZdFcQP70A1a9sha4UQGRS/4uNcQDyLTbqLcniWHZ0FTxq+QrdYHWenLiTYzPk/7F5a6lFTZm9vJmewfg0xBknK+13Dj13u9gbf8rhsTVXNwQqOGdtVfsoI4bEsBAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "FititBackendStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "ApiUrl": {
+   "Description": "Backend API URL",
+   "Value": {
+    "Fn::GetAtt": [
+     "BackendApiED3D8698",
+     "ApiEndpoint"
+    ]
+   },
+   "Export": {
+    "Name": "FititBackendApiUrl"
+   }
+  },
+  "LambdaFunctionName": {
+   "Description": "Lambda Function Name",
+   "Value": {
+    "Ref": "BackendLambdaD93C7B96"
+   },
+   "Export": {
+    "Name": "FititBackendLambdaName"
+   }
+  },
+  "LambdaFunctionArn": {
+   "Description": "Lambda Function ARN",
+   "Value": {
+    "Fn::GetAtt": [
+     "BackendLambdaD93C7B96",
+     "Arn"
+    ]
+   }
+  },
+  "ExportsOutputFnGetAttBackendApiED3D8698ApiEndpoint3439E0AF": {
+   "Value": {
+    "Fn::GetAtt": [
+     "BackendApiED3D8698",
+     "ApiEndpoint"
+    ]
+   },
+   "Export": {
+    "Name": "FititBackendStack:ExportsOutputFnGetAttBackendApiED3D8698ApiEndpoint3439E0AF"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

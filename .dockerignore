@@ -1,0 +1,50 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Build outputs
+dist
+**/dist
+.next
+**/.next
+
+# Infrastructure
+infrastructure
+cdk.out
+
+# Version control
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.*
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test files
+coverage
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Documentation
+*.md
+docs
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Turbo
+.turbo

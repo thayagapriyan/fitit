@@ -17,6 +17,26 @@
     },
     "create-tables": {
       "cache": false
+    },
+    "seed-data": {
+      "cache": false
+    },
+    "synth": {
+      "cache": false,
+      "dependsOn": ["^build"]
+    },
+    "deploy": {
+      "cache": false,
+      "dependsOn": ["synth"]
+    },
+    "diff": {
+      "cache": false
+    },
+    "destroy": {
+      "cache": false
+    },
+    "bootstrap": {
+      "cache": false
     }
   }
 }
