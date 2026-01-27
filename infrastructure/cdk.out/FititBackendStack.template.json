@@ -292,7 +292,7 @@
     ],
     "Code": {
      "S3Bucket": "cdk-hnb659fds-assets-224193574799-us-east-2",
-     "S3Key": "6001c93e1746acfee1c6ae310645301e4beed208332f41aa5cbc22eb0d9e3fd5.zip"
+     "S3Key": "90acd241ca4f91e0bb6ae72a6dae2dd568a41831d66ea49db53b7904854035a5.zip"
     },
     "Description": "FitIt Backend API - Hono.js on Lambda",
     "Environment": {
@@ -349,7 +349,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "FititBackendStack/BackendLambda/Resource",
-    "aws:asset:path": "C:\\Priyan\\VSC\\OWN\\fitit",
+    "aws:asset:path": "asset.90acd241ca4f91e0bb6ae72a6dae2dd568a41831d66ea49db53b7904854035a5",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }

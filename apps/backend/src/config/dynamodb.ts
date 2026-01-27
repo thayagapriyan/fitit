@@ -8,9 +8,14 @@ import { config } from './index.js';
  */
 
 // Base DynamoDB client with retry configuration
+// In Lambda (production), credentials are automatically provided by the IAM role
+// Only use explicit credentials in local development
+const isLambda = !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+
 const baseClient = new DynamoDBClient({
   region: config.AWS_REGION,
-  ...(config.AWS_ACCESS_KEY_ID && config.AWS_SECRET_ACCESS_KEY && {
+  // Only use explicit credentials in local development (non-Lambda environment)
+  ...(!isLambda && config.AWS_ACCESS_KEY_ID && config.AWS_SECRET_ACCESS_KEY && {
     credentials: {
       accessKeyId: config.AWS_ACCESS_KEY_ID,
       secretAccessKey: config.AWS_SECRET_ACCESS_KEY,
