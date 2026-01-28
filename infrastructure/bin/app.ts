@@ -48,6 +48,7 @@ const backendStack = new BackendStack(app, `${prefix}BackendStack`, {
 backendStack.addDependency(databaseStack);
 
 // 4. Frontend Stack - Fargate + ALB
+// Uses ECR repository - build and push image via scripts/deploy-frontend.ps1
 const frontendStack = new FrontendStack(app, `${prefix}FrontendStack`, {
   env,
   description: 'FitIt Frontend Infrastructure - ECR, Fargate, ALB',

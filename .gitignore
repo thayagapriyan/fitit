@@ -10,12 +10,25 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+
+# ================================
+# SENSITIVE FILES - DO NOT COMMIT
+# ================================
+# Environment files with secrets
+.env
+.env.*
+!.env.example
 *.local
 
-# CDK
+# AWS/Firebase credentials
+*.pem
+*credentials*
+*secret*
+
+# CDK context (contains AWS account info)
 cdk.out
-*.js.map
 cdk.context.json
+*.js.map
 
 # Editor directories and files
 .vscode/*

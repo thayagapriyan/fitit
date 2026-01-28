@@ -41,6 +41,9 @@ ENV VITE_FIREBASE_STORAGE_BUCKET=$VITE_FIREBASE_STORAGE_BUCKET
 ENV VITE_FIREBASE_MESSAGING_SENDER_ID=$VITE_FIREBASE_MESSAGING_SENDER_ID
 ENV VITE_FIREBASE_APP_ID=$VITE_FIREBASE_APP_ID
 
+# Increase Node.js memory limit to prevent esbuild EPIPE errors
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 RUN npm run build
 
 # ================================
@@ -59,11 +62,11 @@ COPY --from=builder /app/apps/frontend/dist /usr/share/nginx/html
 
 # Create non-root user for security
 RUN adduser -D -g '' nginxuser && \
-    chown -R nginxuser:nginxuser /usr/share/nginx/html && \
-    chown -R nginxuser:nginxuser /var/cache/nginx && \
-    chown -R nginxuser:nginxuser /var/log/nginx && \
-    touch /var/run/nginx.pid && \
-    chown -R nginxuser:nginxuser /var/run/nginx.pid
+  chown -R nginxuser:nginxuser /usr/share/nginx/html && \
+  chown -R nginxuser:nginxuser /var/cache/nginx && \
+  chown -R nginxuser:nginxuser /var/log/nginx && \
+  touch /var/run/nginx.pid && \
+  chown -R nginxuser:nginxuser /var/run/nginx.pid
 
 # Expose port 80
 EXPOSE 80
