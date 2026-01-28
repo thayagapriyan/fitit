@@ -1,6 +1,3 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-
 # FitIt
 
 **A Modern Home Repair & Maintenance Platform**
@@ -57,38 +54,42 @@ FitIt is a full-stack web application that serves as a one-stop platform for hom
 ## Tech Stack
 
 ### Frontend
-| Technology | Purpose |
-|------------|---------|
-| React 19 | UI Framework |
-| TypeScript | Type Safety |
-| Vite | Build Tool |
+
+| Technology      | Purpose             |
+| --------------- | ------------------- |
+| React 19        | UI Framework        |
+| TypeScript      | Type Safety         |
+| Vite            | Build Tool          |
 | React Router v7 | Client-side Routing |
-| Tailwind CSS | Styling |
-| Lucide Icons | Icon Library |
+| Tailwind CSS    | Styling             |
+| Lucide Icons    | Icon Library        |
 
 ### Backend
-| Technology | Purpose |
-|------------|---------|
-| Hono.js | Web Framework |
-| Node.js 20 | Runtime |
-| AWS Lambda | Serverless Compute |
-| DynamoDB | NoSQL Database |
-| Zod | Schema Validation |
+
+| Technology       | Purpose             |
+| ---------------- | ------------------- |
+| Hono.js          | Web Framework       |
+| Node.js 20       | Runtime             |
+| AWS Lambda       | Serverless Compute  |
+| DynamoDB         | NoSQL Database      |
+| Zod              | Schema Validation   |
 | Google Gemini AI | AI Chat Integration |
 
 ### Infrastructure
-| Technology | Purpose |
-|------------|---------|
-| AWS CDK | Infrastructure as Code |
-| ECS Fargate | Container Orchestration |
-| API Gateway | API Management |
-| Secrets Manager | Secrets Storage |
-| CloudWatch | Logging & Monitoring |
+
+| Technology      | Purpose                 |
+| --------------- | ----------------------- |
+| AWS CDK         | Infrastructure as Code  |
+| ECS Fargate     | Container Orchestration |
+| API Gateway     | API Management          |
+| Secrets Manager | Secrets Storage         |
+| CloudWatch      | Logging & Monitoring    |
 
 ### Monorepo
-| Technology | Purpose |
-|------------|---------|
-| Turborepo | Build System |
+
+| Technology     | Purpose            |
+| -------------- | ------------------ |
+| Turborepo      | Build System       |
 | npm Workspaces | Package Management |
 
 ---
@@ -156,12 +157,14 @@ fitit/
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/your-username/fitit.git
    cd fitit
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
@@ -169,11 +172,13 @@ fitit/
 3. **Set up environment variables**
 
    Create `.env.local` in the root directory:
+
    ```env
    GEMINI_API_KEY=your_gemini_api_key
    ```
 
    For backend development, create `apps/backend/.env`:
+
    ```env
    NODE_ENV=development
    PORT=3001
@@ -184,15 +189,18 @@ fitit/
 ### Running Locally
 
 **Start all applications:**
+
 ```bash
 npm run dev
 ```
 
 This will start:
+
 - Frontend at `http://localhost:5173`
 - Backend at `http://localhost:3001`
 
 **Run individual apps:**
+
 ```bash
 # Frontend only
 npm run dev --workspace=frontend
@@ -218,54 +226,54 @@ npm run build --workspace=backend
 
 ### Products
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/products` | List all products |
-| GET | `/api/products/:id` | Get product by ID |
-| GET | `/api/products/category/:category` | Filter by category |
-| GET | `/api/products/search?q=query` | Search products |
-| GET | `/api/products/top-rated` | Get top-rated products |
-| POST | `/api/products` | Create product |
-| PUT | `/api/products/:id` | Update product |
-| DELETE | `/api/products/:id` | Delete product |
+| Method | Endpoint                           | Description            |
+| ------ | ---------------------------------- | ---------------------- |
+| GET    | `/api/products`                    | List all products      |
+| GET    | `/api/products/:id`                | Get product by ID      |
+| GET    | `/api/products/category/:category` | Filter by category     |
+| GET    | `/api/products/search?q=query`     | Search products        |
+| GET    | `/api/products/top-rated`          | Get top-rated products |
+| POST   | `/api/products`                    | Create product         |
+| PUT    | `/api/products/:id`                | Update product         |
+| DELETE | `/api/products/:id`                | Delete product         |
 
 **Categories:** `Power Tools`, `Hand Tools`, `Electrical`, `Plumbing`, `Safety`
 
 ### Service Profiles
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/service-profiles` | List all professionals |
-| GET | `/api/service-profiles/:id` | Get profile by ID |
-| GET | `/api/service-profiles/profession/:type` | Filter by profession |
-| POST | `/api/service-profiles` | Create profile |
-| PUT | `/api/service-profiles/:id` | Update profile |
-| DELETE | `/api/service-profiles/:id` | Delete profile |
+| Method | Endpoint                                 | Description            |
+| ------ | ---------------------------------------- | ---------------------- |
+| GET    | `/api/service-profiles`                  | List all professionals |
+| GET    | `/api/service-profiles/:id`              | Get profile by ID      |
+| GET    | `/api/service-profiles/profession/:type` | Filter by profession   |
+| POST   | `/api/service-profiles`                  | Create profile         |
+| PUT    | `/api/service-profiles/:id`              | Update profile         |
+| DELETE | `/api/service-profiles/:id`              | Delete profile         |
 
 **Professions:** `Electrician`, `Carpenter`, `Plumber`, `HVAC`, `General Handyman`
 
 ### Service Requests
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/service-requests` | List all requests |
-| GET | `/api/service-requests/:id` | Get request by ID |
-| GET | `/api/service-requests/customer/:customerId` | Get by customer |
-| GET | `/api/service-requests/status/:status` | Filter by status |
-| POST | `/api/service-requests` | Create request |
-| PUT | `/api/service-requests/:id` | Update request |
-| PUT | `/api/service-requests/:id/accept` | Accept a job |
-| DELETE | `/api/service-requests/:id` | Delete request |
+| Method | Endpoint                                     | Description       |
+| ------ | -------------------------------------------- | ----------------- |
+| GET    | `/api/service-requests`                      | List all requests |
+| GET    | `/api/service-requests/:id`                  | Get request by ID |
+| GET    | `/api/service-requests/customer/:customerId` | Get by customer   |
+| GET    | `/api/service-requests/status/:status`       | Filter by status  |
+| POST   | `/api/service-requests`                      | Create request    |
+| PUT    | `/api/service-requests/:id`                  | Update request    |
+| PUT    | `/api/service-requests/:id/accept`           | Accept a job      |
+| DELETE | `/api/service-requests/:id`                  | Delete request    |
 
 **Statuses:** `OPEN`, `IN_PROGRESS`, `COMPLETED`
 
 ### AI Assistant
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/ai` | Send message to AI assistant |
-| GET | `/api/ai/history/:sessionId` | Get chat history |
-| DELETE | `/api/ai/history/:sessionId` | Clear chat history |
+| Method | Endpoint                     | Description                  |
+| ------ | ---------------------------- | ---------------------------- |
+| POST   | `/api/ai`                    | Send message to AI assistant |
+| GET    | `/api/ai/history/:sessionId` | Get chat history             |
+| DELETE | `/api/ai/history/:sessionId` | Clear chat history           |
 
 ---
 
@@ -283,12 +291,14 @@ The infrastructure is organized into four CDK stacks:
 ### Deploying to AWS
 
 1. **Bootstrap CDK (first time only)**
+
    ```bash
    cd infrastructure
    npx cdk bootstrap
    ```
 
 2. **Deploy all stacks**
+
    ```bash
    npm run cdk:deploy
    ```
@@ -315,12 +325,12 @@ npm run seed-data
 
 ### DynamoDB Tables
 
-| Table | Partition Key | Sort Key | GSIs |
-|-------|---------------|----------|------|
-| `fitit-products` | `id` | - | `category-index` |
-| `fitit-service-profiles` | `id` | - | `profession-index` |
-| `fitit-service-requests` | `id` | - | `customerId-index`, `status-index` |
-| `fitit-chat` | `sessionId` | `timestamp` | - |
+| Table                    | Partition Key | Sort Key    | GSIs                               |
+| ------------------------ | ------------- | ----------- | ---------------------------------- |
+| `fitit-products`         | `id`          | -           | `category-index`                   |
+| `fitit-service-profiles` | `id`          | -           | `profession-index`                 |
+| `fitit-service-requests` | `id`          | -           | `customerId-index`, `status-index` |
+| `fitit-chat`             | `sessionId`   | `timestamp` | -                                  |
 
 ---
 
@@ -328,36 +338,36 @@ npm run seed-data
 
 ### Backend
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `NODE_ENV` | Environment (development/production) | Yes |
-| `PORT` | Server port (local development) | No |
-| `AWS_REGION` | AWS region | Yes |
-| `GEMINI_API_KEY` | Google Gemini API key | Yes |
-| `PRODUCTS_TABLE` | DynamoDB products table name | Yes |
-| `SERVICE_PROFILES_TABLE` | DynamoDB profiles table name | Yes |
-| `SERVICE_REQUESTS_TABLE` | DynamoDB requests table name | Yes |
-| `CHAT_TABLE` | DynamoDB chat table name | Yes |
+| Variable                 | Description                          | Required |
+| ------------------------ | ------------------------------------ | -------- |
+| `NODE_ENV`               | Environment (development/production) | Yes      |
+| `PORT`                   | Server port (local development)      | No       |
+| `AWS_REGION`             | AWS region                           | Yes      |
+| `GEMINI_API_KEY`         | Google Gemini API key                | Yes      |
+| `PRODUCTS_TABLE`         | DynamoDB products table name         | Yes      |
+| `SERVICE_PROFILES_TABLE` | DynamoDB profiles table name         | Yes      |
+| `SERVICE_REQUESTS_TABLE` | DynamoDB requests table name         | Yes      |
+| `CHAT_TABLE`             | DynamoDB chat table name             | Yes      |
 
 ### Frontend
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `VITE_API_URL` | Backend API URL | Yes |
+| Variable       | Description     | Required |
+| -------------- | --------------- | -------- |
+| `VITE_API_URL` | Backend API URL | Yes      |
 
 ---
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start all apps in development mode |
-| `npm run build` | Build all packages |
-| `npm run lint` | Lint all packages |
-| `npm run cdk:synth` | Synthesize CloudFormation templates |
-| `npm run cdk:deploy` | Deploy all stacks to AWS |
-| `npm run create-tables` | Create DynamoDB tables |
-| `npm run seed-data` | Seed initial data |
+| Command                 | Description                         |
+| ----------------------- | ----------------------------------- |
+| `npm run dev`           | Start all apps in development mode  |
+| `npm run build`         | Build all packages                  |
+| `npm run lint`          | Lint all packages                   |
+| `npm run cdk:synth`     | Synthesize CloudFormation templates |
+| `npm run cdk:deploy`    | Deploy all stacks to AWS            |
+| `npm run create-tables` | Create DynamoDB tables              |
+| `npm run seed-data`     | Seed initial data                   |
 
 ---
 
