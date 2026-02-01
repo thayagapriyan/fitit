@@ -4,6 +4,8 @@ export const ROUTES = {
   SERVICES: '/services',
   DASHBOARD: '/dashboard',
   AI_ASSISTANT: '/ai-assistant',
+  LOGIN: '/login',
+  SIGNUP: '/signup',
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;

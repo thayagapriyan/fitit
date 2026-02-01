@@ -10,12 +10,16 @@ import { Construct } from 'constructs';
  * - Service Profiles table (with profession GSI)
  * - Service Requests table (with customerId and status GSIs)
  * - Chat table (with sessionId partition key and timestamp sort key)
+ * - Users table (with customerId, email, and role GSIs)
+ * - Counters table (for atomic ID generation)
  */
 export class DatabaseStack extends cdk.Stack {
   public readonly productsTable: dynamodb.Table;
   public readonly serviceProfilesTable: dynamodb.Table;
   public readonly serviceRequestsTable: dynamodb.Table;
   public readonly chatTable: dynamodb.Table;
+  public readonly usersTable: dynamodb.Table;
+  public readonly countersTable: dynamodb.Table;
 
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -118,6 +122,63 @@ export class DatabaseStack extends cdk.Stack {
     });
 
     // ============================================
+    // Users Table
+    // ============================================
+    this.usersTable = new dynamodb.Table(this, 'UsersTable', {
+      tableName: 'fitit-users',
+      partitionKey: {
+        name: 'id',
+        type: dynamodb.AttributeType.STRING,
+      },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
+    });
+
+    // GSI for querying by unique customerId
+    this.usersTable.addGlobalSecondaryIndex({
+      indexName: 'customerId-index',
+      partitionKey: {
+        name: 'customerId',
+        type: dynamodb.AttributeType.STRING,
+      },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // GSI for querying by email
+    this.usersTable.addGlobalSecondaryIndex({
+      indexName: 'email-index',
+      partitionKey: {
+        name: 'email',
+        type: dynamodb.AttributeType.STRING,
+      },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // GSI for querying by role (CUSTOMER or PROFESSIONAL)
+    this.usersTable.addGlobalSecondaryIndex({
+      indexName: 'role-index',
+      partitionKey: {
+        name: 'role',
+        type: dynamodb.AttributeType.STRING,
+      },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // ============================================
+    // Counters Table (for atomic ID generation)
+    // ============================================
+    this.countersTable = new dynamodb.Table(this, 'CountersTable', {
+      tableName: 'fitit-counters',
+      partitionKey: {
+        name: 'id',
+        type: dynamodb.AttributeType.STRING,
+      },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+    });
+
+    // ============================================
     // Outputs
     // ============================================
     new cdk.CfnOutput(this, 'ProductsTableName', {
@@ -143,5 +204,18 @@ export class DatabaseStack extends cdk.Stack {
       description: 'Chat DynamoDB Table Name',
       exportName: 'FititChatTableName',
     });
+
+    new cdk.CfnOutput(this, 'UsersTableName', {
+      value: this.usersTable.tableName,
+      description: 'Users DynamoDB Table Name',
+      exportName: 'FititUsersTableName',
+    });
+
+    new cdk.CfnOutput(this, 'CountersTableName', {
+      value: this.countersTable.tableName,
+      description: 'Counters DynamoDB Table Name',
+      exportName: 'FititCountersTableName',
+    });
   }
 }
+

@@ -2,45 +2,60 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
+import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
 import { User, Briefcase } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
-  const [role, setRole] = useState<UserRole>(UserRole.GUEST);
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const { user, userRole, setUserRole, signOut } = useAuth();
+  const [showRoleModal, setShowRoleModal] = useState(false);
 
-  const handleLogin = (selectedRole: UserRole) => {
-    setRole(selectedRole);
-    setShowLoginModal(false);
+  // Show role selection modal if user is logged in but hasn't selected a role
+  const needsRoleSelection = user && userRole === UserRole.GUEST;
+
+  const handleRoleSelect = (role: UserRole) => {
+    setUserRole(role);
+    setShowRoleModal(false);
   };
 
-  const handleLogout = () => {
-    setRole(UserRole.GUEST);
+  const handleLogout = async () => {
+    await signOut();
   };
+
+  // Effect to show role modal when needed
+  React.useEffect(() => {
+    if (needsRoleSelection) {
+      setShowRoleModal(true);
+    }
+  }, [needsRoleSelection]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
-      <Header role={role} onLogout={handleLogout} onLoginClick={() => setShowLoginModal(true)} />
+      <Header 
+        role={userRole} 
+        onLogout={handleLogout} 
+        isLoggedIn={!!user}
+      />
       
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        <Outlet context={{ role, setRole }} />
+        <Outlet context={{ role: userRole, setRole: setUserRole }} />
       </main>
       
       <Footer />
 
-      {/* Login Modal */}
-      {showLoginModal && (
+      {/* Role Selection Modal - shows when user needs to pick a role */}
+      {showRoleModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
             <div className="p-8">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900">Welcome to FixItHub</h2>
-                <p className="text-gray-500 mt-2">Select your account type to continue</p>
+                <h2 className="text-2xl font-bold text-gray-900">Choose Your Role</h2>
+                <p className="text-gray-500 mt-2">How will you use FixItHub?</p>
               </div>
 
               <div className="space-y-4">
                 <button
-                  onClick={() => handleLogin(UserRole.CUSTOMER)}
+                  onClick={() => handleRoleSelect(UserRole.CUSTOMER)}
                   className="w-full p-4 border border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all group flex items-center gap-4 text-left"
                 >
                   <div className="bg-blue-100 p-3 rounded-lg group-hover:bg-blue-200 transition-colors">
@@ -53,7 +68,7 @@ const MainLayout: React.FC = () => {
                 </button>
 
                 <button
-                  onClick={() => handleLogin(UserRole.PROFESSIONAL)}
+                  onClick={() => handleRoleSelect(UserRole.PROFESSIONAL)}
                   className="w-full p-4 border border-gray-200 rounded-xl hover:border-orange-500 hover:bg-orange-50 transition-all group flex items-center gap-4 text-left"
                 >
                   <div className="bg-orange-100 p-3 rounded-lg group-hover:bg-orange-200 transition-colors">
@@ -65,14 +80,6 @@ const MainLayout: React.FC = () => {
                   </div>
                 </button>
               </div>
-            </div>
-            <div className="bg-gray-50 px-8 py-4 text-center">
-              <button
-                onClick={() => setShowLoginModal(false)}
-                className="text-gray-500 hover:text-gray-700 text-sm font-medium"
-              >
-                Cancel
-              </button>
             </div>
           </div>
         </div>

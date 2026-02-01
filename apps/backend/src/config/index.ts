@@ -15,6 +15,7 @@ const envSchema = z.object({
   DYNAMODB_SERVICE_PROFILES_TABLE: z.string().default('fitit-service-profiles'),
   DYNAMODB_SERVICE_REQUESTS_TABLE: z.string().default('fitit-service-requests'),
   DYNAMODB_CHAT_TABLE: z.string().default('fitit-chat'),
+  DYNAMODB_USERS_TABLE: z.string().default('fitit-users'),
 
   // Gemini AI
   GEMINI_API_KEY: z.string().optional(),
