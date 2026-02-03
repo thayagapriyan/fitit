@@ -1,4 +1,4 @@
-# FitIt
+# FitIt Web Application
 
 **A Modern Home Repair & Maintenance Platform**
 
