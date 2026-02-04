@@ -1,0 +1,710 @@
+name: Destroy AWS Resources
+
+# ============================================================
+# COMPREHENSIVE TEARDOWN WORKFLOW
+#
+# Destroys Fixit AWS resources in safe reverse-dependency order:
+#   1. Frontend  (ECS Fargate, ALB, ECR, Log Group)
+#   2. Backend   (Lambda, API Gateway, Log Group)
+#   3. Database  (CDK stack + optionally DynamoDB tables)
+#   4. Network   (VPC, Subnets, Security Groups)
+#
+# Also handles:
+#   - ECR image cleanup (required before repo deletion)
+#   - DynamoDB tables with RETAIN policy (opt-in deletion)
+#   - CloudWatch log group cleanup
+#   - Legacy "Fitit" stack removal
+#   - Secrets Manager cleanup (opt-in)
+# ============================================================
+
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'What to destroy'
+        required: true
+        type: choice
+        options:
+          - all
+          - frontend-only
+          - backend-only
+          - database-only
+          - network-only
+          - legacy-stacks
+      delete_dynamodb_tables:
+        description: 'Also delete DynamoDB tables? (they have RETAIN policy)'
+        required: true
+        type: boolean
+        default: false
+      delete_ecr_images:
+        description: 'Delete all ECR images before destroying frontend?'
+        required: true
+        type: boolean
+        default: true
+      delete_log_groups:
+        description: 'Delete CloudWatch log groups?'
+        required: true
+        type: boolean
+        default: true
+      delete_secrets:
+        description: 'Delete Secrets Manager secrets (e.g. Gemini API key)?'
+        required: true
+        type: boolean
+        default: false
+      confirm:
+        description: 'Type "destroy" to confirm resource deletion'
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-2
+  ECR_REPOSITORY: fixit-frontend
+  ECS_CLUSTER: fixit-frontend-cluster
+  ECS_SERVICE: fixit-frontend-service
+  LAMBDA_FUNCTION: fixit-backend
+
+  # DynamoDB table names (including legacy "fitit" typos still in CDK)
+  DYNAMODB_TABLES: >-
+    fixit-products
+    fixit-service-profiles
+    fitit-service-requests
+    fixit-chat
+    fitit-users
+    fixit-counters
+
+  # CloudWatch log groups
+  LOG_GROUPS: >-
+    /ecs/fixit-frontend
+    /aws/lambda/fixit-backend
+
+  # CDK stack names (current)
+  STACK_FRONTEND: FixitFrontendStack
+  STACK_BACKEND: FixitBackendStack
+  STACK_DATABASE: FixitDatabaseStack
+  STACK_NETWORK: FixitNetworkStack
+
+  # CDK stack names (legacy)
+  STACK_LEGACY_FRONTEND: FititFrontendStack
+  STACK_LEGACY_BACKEND: FititBackendStack
+  STACK_LEGACY_DATABASE: FititDatabaseStack
+  STACK_LEGACY_NETWORK: FititNetworkStack
+
+jobs:
+  # ── Validation Gate ───────────────────────────────────
+  validate:
+    name: Validate Confirmation
+    runs-on: ubuntu-latest
+    if: inputs.confirm == 'destroy'
+    steps:
+      - name: Confirm destruction
+        run: |
+          echo "## Destruction Confirmed" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Setting | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Scope | \`${{ inputs.scope }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Delete DynamoDB tables | \`${{ inputs.delete_dynamodb_tables }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Delete ECR images | \`${{ inputs.delete_ecr_images }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Delete log groups | \`${{ inputs.delete_log_groups }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Delete secrets | \`${{ inputs.delete_secrets }}\` |" >> "$GITHUB_STEP_SUMMARY"
+
+  # ── Step 1: Stop running ECS services ─────────────────
+  stop-services:
+    name: Stop Running Services
+    needs: validate
+    if: >-
+      inputs.scope == 'all' || inputs.scope == 'frontend-only'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Scale down ECS service to 0
+        run: |
+          echo "Scaling down ECS service..."
+          # Check if the service exists before trying to update
+          if aws ecs describe-services \
+            --cluster "$ECS_CLUSTER" \
+            --services "$ECS_SERVICE" \
+            --query "services[?status=='ACTIVE'].serviceName" \
+            --output text 2>/dev/null | grep -q "$ECS_SERVICE"; then
+
+            aws ecs update-service \
+              --cluster "$ECS_CLUSTER" \
+              --service "$ECS_SERVICE" \
+              --desired-count 0 \
+              --query "service.desiredCount" \
+              --output text
+
+            echo "Waiting for tasks to drain..."
+            aws ecs wait services-stable \
+              --cluster "$ECS_CLUSTER" \
+              --services "$ECS_SERVICE" || true
+
+            echo "ECS service scaled to 0"
+          else
+            echo "ECS service not found or already inactive - skipping"
+          fi
+
+  # ── Step 2: Clean ECR images ──────────────────────────
+  clean-ecr:
+    name: Clean ECR Images
+    needs: [validate, stop-services]
+    if: >-
+      !cancelled() && !failure() &&
+      inputs.delete_ecr_images &&
+      (inputs.scope == 'all' || inputs.scope == 'frontend-only')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Delete all ECR images
+        run: |
+          echo "Cleaning ECR repository: $ECR_REPOSITORY"
+
+          # Check if repository exists
+          if ! aws ecr describe-repositories \
+            --repository-names "$ECR_REPOSITORY" 2>/dev/null; then
+            echo "ECR repository not found - skipping"
+            exit 0
+          fi
+
+          # Get all image IDs
+          IMAGE_IDS=$(aws ecr list-images \
+            --repository-name "$ECR_REPOSITORY" \
+            --query "imageIds[*]" \
+            --output json)
+
+          if [ "$IMAGE_IDS" = "[]" ] || [ -z "$IMAGE_IDS" ]; then
+            echo "No images found in repository"
+            exit 0
+          fi
+
+          # Delete in batches of 100 (ECR API limit)
+          echo "$IMAGE_IDS" | jq -c '[.[] | select(.imageDigest != null)] | _nwise(100)' | while read -r BATCH; do
+            if [ -n "$BATCH" ] && [ "$BATCH" != "null" ]; then
+              echo "Deleting batch of images..."
+              aws ecr batch-delete-image \
+                --repository-name "$ECR_REPOSITORY" \
+                --image-ids "$BATCH" || true
+            fi
+          done
+
+          # Verify cleanup
+          REMAINING=$(aws ecr list-images \
+            --repository-name "$ECR_REPOSITORY" \
+            --query "length(imageIds)" \
+            --output text)
+          echo "Remaining images: $REMAINING"
+
+          echo "### ECR Cleanup" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Repository: \`$ECR_REPOSITORY\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Remaining images: \`$REMAINING\`" >> "$GITHUB_STEP_SUMMARY"
+
+  # ── Step 3: Destroy Frontend Stack ────────────────────
+  destroy-frontend:
+    name: Destroy Frontend (ECS + ALB + ECR)
+    needs: [validate, stop-services, clean-ecr]
+    if: >-
+      !cancelled() && !failure() &&
+      (inputs.scope == 'all' || inputs.scope == 'frontend-only')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build infrastructure
+        run: npm run build --workspace=infrastructure
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: CDK Destroy Frontend Stack
+        working-directory: infrastructure
+        run: |
+          echo "Destroying $STACK_FRONTEND..."
+          npx cdk destroy "$STACK_FRONTEND" --force 2>&1 || {
+            echo "::warning::CDK destroy failed for $STACK_FRONTEND - attempting CloudFormation direct delete"
+            aws cloudformation delete-stack --stack-name "$STACK_FRONTEND"
+            echo "Waiting for stack deletion..."
+            aws cloudformation wait stack-delete-complete --stack-name "$STACK_FRONTEND" || true
+          }
+          echo "Frontend stack destroyed"
+
+      - name: Verify frontend stack deleted
+        run: |
+          STATUS=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_FRONTEND" \
+            --query "Stacks[0].StackStatus" \
+            --output text 2>/dev/null || echo "DELETED")
+          echo "Stack status: $STATUS"
+          echo "### Frontend Teardown" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Stack: \`$STACK_FRONTEND\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Status: \`$STATUS\`" >> "$GITHUB_STEP_SUMMARY"
+
+  # ── Step 4: Destroy Backend Stack ─────────────────────
+  destroy-backend:
+    name: Destroy Backend (Lambda + API Gateway)
+    needs: [validate, destroy-frontend]
+    if: >-
+      !cancelled() && !failure() &&
+      (inputs.scope == 'all' || inputs.scope == 'backend-only')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build infrastructure
+        run: npm run build --workspace=infrastructure
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: CDK Destroy Backend Stack
+        working-directory: infrastructure
+        run: |
+          echo "Destroying $STACK_BACKEND..."
+          npx cdk destroy "$STACK_BACKEND" --force 2>&1 || {
+            echo "::warning::CDK destroy failed for $STACK_BACKEND - attempting CloudFormation direct delete"
+            aws cloudformation delete-stack --stack-name "$STACK_BACKEND"
+            echo "Waiting for stack deletion..."
+            aws cloudformation wait stack-delete-complete --stack-name "$STACK_BACKEND" || true
+          }
+          echo "Backend stack destroyed"
+
+      - name: Verify backend stack deleted
+        run: |
+          STATUS=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_BACKEND" \
+            --query "Stacks[0].StackStatus" \
+            --output text 2>/dev/null || echo "DELETED")
+          echo "Stack status: $STATUS"
+          echo "### Backend Teardown" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Stack: \`$STACK_BACKEND\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Status: \`$STATUS\`" >> "$GITHUB_STEP_SUMMARY"
+
+  # ── Step 5: Destroy Database Stack ────────────────────
+  destroy-database:
+    name: Destroy Database Stack
+    needs: [validate, destroy-backend]
+    if: >-
+      !cancelled() && !failure() &&
+      (inputs.scope == 'all' || inputs.scope == 'database-only')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build infrastructure
+        run: npm run build --workspace=infrastructure
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: CDK Destroy Database Stack
+        working-directory: infrastructure
+        run: |
+          echo "Destroying $STACK_DATABASE..."
+          echo "Note: DynamoDB tables have RETAIN policy - they will NOT be deleted by CDK"
+          npx cdk destroy "$STACK_DATABASE" --force 2>&1 || {
+            echo "::warning::CDK destroy failed for $STACK_DATABASE - attempting CloudFormation direct delete"
+            aws cloudformation delete-stack --stack-name "$STACK_DATABASE"
+            echo "Waiting for stack deletion..."
+            aws cloudformation wait stack-delete-complete --stack-name "$STACK_DATABASE" || true
+          }
+          echo "Database stack destroyed (tables retained)"
+
+      - name: Delete DynamoDB tables (if opted in)
+        if: inputs.delete_dynamodb_tables
+        run: |
+          echo "Deleting DynamoDB tables (RETAIN policy override)..."
+          DELETED=()
+          FAILED=()
+
+          for TABLE in $DYNAMODB_TABLES; do
+            echo "Checking table: $TABLE"
+            if aws dynamodb describe-table --table-name "$TABLE" 2>/dev/null; then
+              echo "Deleting table: $TABLE"
+              if aws dynamodb delete-table --table-name "$TABLE" 2>/dev/null; then
+                echo "Waiting for $TABLE deletion..."
+                aws dynamodb wait table-not-exists --table-name "$TABLE" 2>/dev/null || true
+                DELETED+=("$TABLE")
+                echo "Deleted: $TABLE"
+              else
+                FAILED+=("$TABLE")
+                echo "::warning::Failed to delete table: $TABLE"
+              fi
+            else
+              echo "Table not found: $TABLE (already deleted or never created)"
+            fi
+          done
+
+          echo "### DynamoDB Tables Cleanup" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Deleted: ${DELETED[*]:-none}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Failed: ${FAILED[*]:-none}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report retained tables
+        if: "!inputs.delete_dynamodb_tables"
+        run: |
+          echo "### DynamoDB Tables (RETAINED)" >> "$GITHUB_STEP_SUMMARY"
+          echo "The following tables were NOT deleted (RETAIN policy):" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          for TABLE in $DYNAMODB_TABLES; do
+            EXISTS=$(aws dynamodb describe-table --table-name "$TABLE" --query "Table.TableStatus" --output text 2>/dev/null || echo "NOT_FOUND")
+            echo "- \`$TABLE\`: \`$EXISTS\`" >> "$GITHUB_STEP_SUMMARY"
+          done
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "> To delete these tables, re-run this workflow with **Delete DynamoDB tables** enabled." >> "$GITHUB_STEP_SUMMARY"
+
+  # ── Step 6: Destroy Network Stack ─────────────────────
+  destroy-network:
+    name: Destroy Network (VPC)
+    needs: [validate, destroy-frontend, destroy-backend, destroy-database]
+    if: >-
+      !cancelled() && !failure() &&
+      (inputs.scope == 'all' || inputs.scope == 'network-only')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build infrastructure
+        run: npm run build --workspace=infrastructure
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: CDK Destroy Network Stack
+        working-directory: infrastructure
+        run: |
+          echo "Destroying $STACK_NETWORK..."
+          npx cdk destroy "$STACK_NETWORK" --force 2>&1 || {
+            echo "::warning::CDK destroy failed for $STACK_NETWORK - attempting CloudFormation direct delete"
+            aws cloudformation delete-stack --stack-name "$STACK_NETWORK"
+            echo "Waiting for stack deletion..."
+            aws cloudformation wait stack-delete-complete --stack-name "$STACK_NETWORK" || true
+          }
+          echo "Network stack destroyed"
+
+      - name: Verify network stack deleted
+        run: |
+          STATUS=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NETWORK" \
+            --query "Stacks[0].StackStatus" \
+            --output text 2>/dev/null || echo "DELETED")
+          echo "Stack status: $STATUS"
+          echo "### Network Teardown" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Stack: \`$STACK_NETWORK\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Status: \`$STATUS\`" >> "$GITHUB_STEP_SUMMARY"
+
+  # ── Step 7: Destroy Legacy Stacks ─────────────────────
+  destroy-legacy:
+    name: Destroy Legacy "Fitit" Stacks
+    needs: validate
+    if: inputs.scope == 'legacy-stacks'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build infrastructure
+        run: npm run build --workspace=infrastructure
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Destroy legacy stacks
+        working-directory: infrastructure
+        run: |
+          echo "Destroying legacy Fitit stacks..."
+          LEGACY_STACKS=(
+            "$STACK_LEGACY_FRONTEND"
+            "$STACK_LEGACY_BACKEND"
+            "$STACK_LEGACY_DATABASE"
+            "$STACK_LEGACY_NETWORK"
+          )
+
+          for STACK in "${LEGACY_STACKS[@]}"; do
+            echo "Checking stack: $STACK"
+            if aws cloudformation describe-stacks --stack-name "$STACK" 2>/dev/null; then
+              echo "Destroying: $STACK"
+              aws cloudformation delete-stack --stack-name "$STACK"
+              echo "Waiting for $STACK deletion..."
+              aws cloudformation wait stack-delete-complete --stack-name "$STACK" || {
+                echo "::warning::Timeout waiting for $STACK deletion"
+              }
+              echo "Destroyed: $STACK"
+            else
+              echo "Stack not found: $STACK (already deleted)"
+            fi
+          done
+
+          echo "### Legacy Stack Teardown" >> "$GITHUB_STEP_SUMMARY"
+          for STACK in "${LEGACY_STACKS[@]}"; do
+            STATUS=$(aws cloudformation describe-stacks \
+              --stack-name "$STACK" \
+              --query "Stacks[0].StackStatus" \
+              --output text 2>/dev/null || echo "DELETED")
+            echo "- \`$STACK\`: \`$STATUS\`" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+  # ── Step 8: Cleanup Orphaned Resources ────────────────
+  cleanup-orphans:
+    name: Cleanup Orphaned Resources
+    needs: [validate, destroy-frontend, destroy-backend, destroy-database, destroy-network]
+    if: >-
+      always() &&
+      needs.validate.result == 'success' &&
+      inputs.scope == 'all'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Delete CloudWatch log groups
+        if: inputs.delete_log_groups
+        run: |
+          echo "Cleaning up CloudWatch log groups..."
+          for LOG_GROUP in $LOG_GROUPS; do
+            echo "Checking log group: $LOG_GROUP"
+            if aws logs describe-log-groups \
+              --log-group-name-prefix "$LOG_GROUP" \
+              --query "logGroups[?logGroupName=='$LOG_GROUP'].logGroupName" \
+              --output text 2>/dev/null | grep -q "$LOG_GROUP"; then
+              echo "Deleting log group: $LOG_GROUP"
+              aws logs delete-log-group --log-group-name "$LOG_GROUP" || {
+                echo "::warning::Failed to delete log group: $LOG_GROUP"
+              }
+            else
+              echo "Log group not found: $LOG_GROUP"
+            fi
+          done
+
+          echo "### CloudWatch Cleanup" >> "$GITHUB_STEP_SUMMARY"
+          echo "Log groups processed: \`$LOG_GROUPS\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Delete Secrets Manager secrets
+        if: inputs.delete_secrets
+        run: |
+          echo "Cleaning up Secrets Manager..."
+          SECRETS=(
+            "/fixit/production/gemini-api-key"
+          )
+
+          for SECRET in "${SECRETS[@]}"; do
+            echo "Checking secret: $SECRET"
+            if aws secretsmanager describe-secret --secret-id "$SECRET" 2>/dev/null; then
+              echo "Deleting secret: $SECRET (with 7-day recovery window)"
+              aws secretsmanager delete-secret \
+                --secret-id "$SECRET" \
+                --recovery-window-in-days 7 || {
+                echo "::warning::Failed to delete secret: $SECRET"
+              }
+            else
+              echo "Secret not found: $SECRET"
+            fi
+          done
+
+          echo "### Secrets Manager Cleanup" >> "$GITHUB_STEP_SUMMARY"
+          echo "Secrets processed (7-day recovery window): ${SECRETS[*]}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Clean up orphaned ENIs
+        run: |
+          echo "Checking for orphaned Elastic Network Interfaces..."
+          # Find ENIs tagged with the project or in the fixit VPC
+          ENIS=$(aws ec2 describe-network-interfaces \
+            --filters "Name=tag:Project,Values=Fixit" "Name=status,Values=available" \
+            --query "NetworkInterfaces[].NetworkInterfaceId" \
+            --output text 2>/dev/null || echo "")
+
+          if [ -n "$ENIS" ] && [ "$ENIS" != "None" ]; then
+            for ENI in $ENIS; do
+              echo "Deleting orphaned ENI: $ENI"
+              aws ec2 delete-network-interface --network-interface-id "$ENI" || {
+                echo "::warning::Failed to delete ENI: $ENI"
+              }
+            done
+          else
+            echo "No orphaned ENIs found"
+          fi
+
+      - name: Clean up orphaned security groups
+        run: |
+          echo "Checking for orphaned security groups..."
+          # Find non-default SGs tagged with Fixit
+          SGS=$(aws ec2 describe-security-groups \
+            --filters "Name=tag:Project,Values=Fixit" \
+            --query "SecurityGroups[?GroupName!='default'].GroupId" \
+            --output text 2>/dev/null || echo "")
+
+          if [ -n "$SGS" ] && [ "$SGS" != "None" ]; then
+            for SG in $SGS; do
+              echo "Deleting orphaned security group: $SG"
+              aws ec2 delete-security-group --group-id "$SG" || {
+                echo "::warning::Failed to delete security group: $SG (may have dependencies)"
+              }
+            done
+          else
+            echo "No orphaned security groups found"
+          fi
+
+  # ── Summary ───────────────────────────────────────────
+  summary:
+    name: Destruction Summary
+    needs: [validate, stop-services, clean-ecr, destroy-frontend, destroy-backend, destroy-database, destroy-network, destroy-legacy, cleanup-orphans]
+    if: always() && needs.validate.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Generate final summary
+        run: |
+          echo "## Destroy AWS Resources - Final Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Scope:** \`${{ inputs.scope }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Triggered by:** \`${{ github.actor }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Run:** [\`${{ github.run_id }}\`](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "### Job Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Job | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-----|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Stop Services | \`${{ needs.stop-services.result }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Clean ECR | \`${{ needs.clean-ecr.result }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Destroy Frontend | \`${{ needs.destroy-frontend.result }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Destroy Backend | \`${{ needs.destroy-backend.result }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Destroy Database | \`${{ needs.destroy-database.result }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Destroy Network | \`${{ needs.destroy-network.result }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Destroy Legacy | \`${{ needs.destroy-legacy.result }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Cleanup Orphans | \`${{ needs.cleanup-orphans.result }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "### Remaining Resources Check" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          # Check for any remaining CloudFormation stacks
+          echo "**CloudFormation Stacks (Fixit-related):**" >> "$GITHUB_STEP_SUMMARY"
+          REMAINING_STACKS=$(aws cloudformation list-stacks \
+            --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE ROLLBACK_COMPLETE \
+            --query "StackSummaries[?contains(StackName,'ixit') || contains(StackName,'itit')].{Name:StackName,Status:StackStatus}" \
+            --output table 2>/dev/null || echo "Unable to check")
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "$REMAINING_STACKS" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          # Check DynamoDB tables
+          echo "**DynamoDB Tables (fixit/fitit):**" >> "$GITHUB_STEP_SUMMARY"
+          REMAINING_TABLES=$(aws dynamodb list-tables \
+            --query "TableNames[?contains(@,'ixit') || contains(@,'itit')]" \
+            --output text 2>/dev/null || echo "Unable to check")
+          if [ -n "$REMAINING_TABLES" ] && [ "$REMAINING_TABLES" != "None" ]; then
+            echo "\`$REMAINING_TABLES\`" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "None remaining" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          # Check ECR
+          echo "**ECR Repositories:**" >> "$GITHUB_STEP_SUMMARY"
+          ECR_EXISTS=$(aws ecr describe-repositories \
+            --repository-names "$ECR_REPOSITORY" \
+            --query "repositories[0].repositoryName" \
+            --output text 2>/dev/null || echo "DELETED")
+          echo "\`$ECR_REPOSITORY\`: \`$ECR_EXISTS\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          # Check Lambda
+          echo "**Lambda Functions:**" >> "$GITHUB_STEP_SUMMARY"
+          LAMBDA_EXISTS=$(aws lambda get-function \
+            --function-name "$LAMBDA_FUNCTION" \
+            --query "Configuration.FunctionName" \
+            --output text 2>/dev/null || echo "DELETED")
+          echo "\`$LAMBDA_FUNCTION\`: \`$LAMBDA_EXISTS\`" >> "$GITHUB_STEP_SUMMARY"

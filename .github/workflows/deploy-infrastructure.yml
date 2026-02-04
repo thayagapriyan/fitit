@@ -82,7 +82,7 @@ jobs:
           case "${{ inputs.stack }}" in
             network)        STACK_ARG="FixitNetworkStack" ;;
             database)       STACK_ARG="FixitDatabaseStack" ;;
-            backend)        STACK_ARG="FititBackendStack" ;;
+            backend)        STACK_ARG="FixitBackendStack" ;;
             frontend-infra) STACK_ARG="FixitFrontendStack" ;;
             all)            STACK_ARG="" ;;
           esac
@@ -123,7 +123,7 @@ jobs:
           case "${{ inputs.stack }}" in
             network)        STACK_ARG="FixitNetworkStack" ;;
             database)       STACK_ARG="FixitDatabaseStack" ;;
-            backend)        STACK_ARG="FititBackendStack" ;;
+            backend)        STACK_ARG="FixitBackendStack" ;;
             frontend-infra) STACK_ARG="FixitFrontendStack" ;;
             all)            STACK_ARG="--all" ;;
           esac
