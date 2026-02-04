@@ -1,5 +1,5 @@
 {
-  "name": "@fitit/infrastructure",
+  "name": "@fixit/infrastructure",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -8,11 +8,12 @@
     "cdk": "cdk",
     "synth": "cdk synth",
     "deploy": "cdk deploy --all",
-    "deploy:network": "cdk deploy FititNetworkStack",
-    "deploy:database": "cdk deploy FititDatabaseStack",
-    "deploy:backend": "cdk deploy FititBackendStack",
-    "deploy:frontend": "cdk deploy FititFrontendStack",
+    "deploy:network": "cdk deploy FixitNetworkStack",
+    "deploy:database": "cdk deploy FixitDatabaseStack",
+    "deploy:backend": "cdk deploy FixitBackendStack",
+    "deploy:frontend": "cdk deploy FixitFrontendStack",
     "destroy": "cdk destroy --all",
+    "destroy:legacy": "cdk destroy FititFrontendStack FititBackendStack FititDatabaseStack FititNetworkStack --force",
     "diff": "cdk diff",
     "bootstrap": "cdk bootstrap"
   },

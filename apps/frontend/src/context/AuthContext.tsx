@@ -20,7 +20,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const ROLE_STORAGE_KEY = 'fitit_user_role';
+const ROLE_STORAGE_KEY = 'fixit_user_role';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

@@ -97,7 +97,7 @@ FixIt is a full-stack web application that serves as a one-stop platform for hom
 ## Project Structure
 
 ```
-fitit/
+fixit/
 ├── apps/
 │   ├── backend/                 # Hono.js API server
 │   │   ├── src/
@@ -159,8 +159,8 @@ fitit/
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/your-username/fitit.git
-   cd fitit
+   git clone https://github.com/your-username/fixit.git
+   cd fixit
    ```
 
 2. **Install dependencies**
@@ -327,10 +327,10 @@ npm run seed-data
 
 | Table                    | Partition Key | Sort Key    | GSIs                               |
 | ------------------------ | ------------- | ----------- | ---------------------------------- |
-| `fitit-products`         | `id`          | -           | `category-index`                   |
-| `fitit-service-profiles` | `id`          | -           | `profession-index`                 |
-| `fitit-service-requests` | `id`          | -           | `customerId-index`, `status-index` |
-| `fitit-chat`             | `sessionId`   | `timestamp` | -                                  |
+| `fixit-products`         | `id`          | -           | `category-index`                   |
+| `fixit-service-profiles` | `id`          | -           | `profession-index`                 |
+| `fixit-service-requests` | `id`          | -           | `customerId-index`, `status-index` |
+| `fixit-chat`             | `sessionId`   | `timestamp` | -                                  |
 
 ---
 

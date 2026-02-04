@@ -8,7 +8,7 @@ import { logger } from './utils/index.js';
 import { AppError, fromError, errors } from './utils/index.js';
 
 /**
- * Fitit Backend Server
+ * Fixit Backend Server
  * Enterprise-level API server using Hono.js with DynamoDB
  */
 
@@ -80,7 +80,7 @@ app.onError((err, c) => {
 
 const port = config.PORT;
 
-logger.info(`🚀 Starting Fitit Backend Server`, {
+logger.info(`🚀 Starting Fixit Backend Server`, {
   port,
   environment: config.NODE_ENV,
   region: config.AWS_REGION,

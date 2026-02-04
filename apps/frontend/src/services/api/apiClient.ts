@@ -2,7 +2,7 @@
  * Simple fetch wrapper for API calls
  */
 
-import type { ApiSuccessResponse, ApiErrorResponse } from '@fitit/shared-types';
+import type { ApiSuccessResponse, ApiErrorResponse } from '@fixit/shared-types';
 
 export interface ApiError {
   message: string;

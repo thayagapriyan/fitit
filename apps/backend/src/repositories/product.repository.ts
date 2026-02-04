@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { TableNames } from '../config/dynamodb.js';
 import { BaseRepository } from './base.repository.js';
-import type { Product, ProductCategory, CreateProductRequest, UpdateProductRequest } from '@fitit/shared-types';
+import type { Product, ProductCategory, CreateProductRequest, UpdateProductRequest } from '@fixit/shared-types';
 
 /**
  * Repository for Product entity operations

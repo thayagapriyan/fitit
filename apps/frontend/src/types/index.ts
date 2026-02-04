@@ -9,9 +9,9 @@ export {
   type ProductCategory,
   type ProfessionType,
   type RequestStatus,
-} from '@fitit/shared-types';
+} from '@fixit/shared-types';
 
-import type { ChatMessage as SharedChatMessage } from '@fitit/shared-types';
+import type { ChatMessage as SharedChatMessage } from '@fixit/shared-types';
 
 /** ChatMessage for UI: extends shared type with optional sessionId/timestamp (for local messages) and isThinking */
 export interface ChatMessage extends Omit<SharedChatMessage, 'sessionId' | 'timestamp'> {

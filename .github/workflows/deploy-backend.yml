@@ -58,16 +58,16 @@ jobs:
 
       - name: CDK Diff
         working-directory: infrastructure
-        run: npx cdk diff FititBackendStack || true
+        run: npx cdk diff FixitBackendStack || true
 
       - name: CDK Deploy Backend
         working-directory: infrastructure
-        run: npx cdk deploy FititBackendStack --require-approval never
+        run: npx cdk deploy FixitBackendStack --require-approval never
 
       - name: Output API URL
         run: |
           API_URL=$(aws cloudformation describe-stacks \
-            --stack-name FititBackendStack \
+            --stack-name FixitBackendStack \
             --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
             --output text)
           echo "### Backend Deployed" >> "$GITHUB_STEP_SUMMARY"

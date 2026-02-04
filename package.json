@@ -1,5 +1,5 @@
 {
-  "name": "fitit",
+  "name": "fixit",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -11,17 +11,18 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "clean": "turbo run clean",
-    "create-tables": "turbo run create-tables --filter=@fitit/backend",
-    "seed-data": "turbo run seed-data --filter=@fitit/backend",
-    "cdk:synth": "npm run synth --workspace=@fitit/infrastructure",
-    "cdk:deploy": "npm run deploy --workspace=@fitit/infrastructure",
-    "cdk:deploy:network": "npm run deploy:network --workspace=@fitit/infrastructure",
-    "cdk:deploy:database": "npm run deploy:database --workspace=@fitit/infrastructure",
-    "cdk:deploy:backend": "npm run deploy:backend --workspace=@fitit/infrastructure",
-    "cdk:deploy:frontend": "npm run deploy:frontend --workspace=@fitit/infrastructure",
-    "cdk:diff": "npm run diff --workspace=@fitit/infrastructure",
-    "cdk:destroy": "npm run destroy --workspace=@fitit/infrastructure",
-    "cdk:bootstrap": "npm run bootstrap --workspace=@fitit/infrastructure"
+    "create-tables": "turbo run create-tables --filter=@fixit/backend",
+    "seed-data": "turbo run seed-data --filter=@fixit/backend",
+    "cdk:synth": "npm run synth --workspace=@fixit/infrastructure",
+    "cdk:deploy": "npm run deploy --workspace=@fixit/infrastructure",
+    "cdk:deploy:network": "npm run deploy:network --workspace=@fixit/infrastructure",
+    "cdk:deploy:database": "npm run deploy:database --workspace=@fixit/infrastructure",
+    "cdk:deploy:backend": "npm run deploy:backend --workspace=@fixit/infrastructure",
+    "cdk:deploy:frontend": "npm run deploy:frontend --workspace=@fixit/infrastructure",
+    "cdk:diff": "npm run diff --workspace=@fixit/infrastructure",
+    "cdk:destroy": "npm run destroy --workspace=@fixit/infrastructure",
+    "cdk:destroy:legacy": "npm run destroy:legacy --workspace=@fixit/infrastructure",
+    "cdk:bootstrap": "npm run bootstrap --workspace=@fixit/infrastructure"
   },
   "devDependencies": {
     "turbo": "^2.4.0"

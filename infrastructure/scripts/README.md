@@ -1,6 +1,6 @@
 # ============================================
 
-# FitIt Infrastructure Deployment Scripts
+# Fixit Infrastructure Deployment Scripts
 
 # ============================================
 
@@ -59,10 +59,27 @@ npx cdk deploy --all
 To deploy specific stacks:
 
 ```powershell
-npx cdk deploy FititDatabaseStack     # DynamoDB tables only
-npx cdk deploy FititBackendStack      # Backend Lambda + API Gateway
-npx cdk deploy FititFrontendStack     # ECS/Fargate + ALB
+npx cdk deploy FixitDatabaseStack     # DynamoDB tables only
+npx cdk deploy FixitBackendStack      # Backend Lambda + API Gateway
+npx cdk deploy FixitFrontendStack     # ECS/Fargate + ALB
 ```
+
+---
+
+## Tearing Down Infrastructure
+
+### Destroy all stacks (current Fixit stacks)
+
+From the **repository root**: `npm run cdk:destroy`. Or from `infrastructure`: `npx cdk destroy --all`. Stacks are removed in dependency order.
+
+### Remove old "Fitit" stacks after renaming to Fixit
+
+To delete only the legacy stacks: `npm run cdk:destroy:legacy` (runs `cdk destroy FititFrontendStack FititBackendStack FititDatabaseStack FititNetworkStack --force`).
+
+### Deploying the name change (fitit → fixit)
+
+- **Option A:** With old code run `npm run cdk:destroy`, then switch to new code and `npm run cdk:deploy`. New DynamoDB tables (`fixit-*`) will be empty; migrate or re-seed if needed.
+- **Option B:** Deploy new Fixit stacks first with `npm run cdk:deploy`, then remove old stacks with `npm run cdk:destroy:legacy`.
 
 ---
 

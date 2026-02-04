@@ -80,10 +80,10 @@ jobs:
         run: |
           STACK_ARG=""
           case "${{ inputs.stack }}" in
-            network)        STACK_ARG="FititNetworkStack" ;;
-            database)       STACK_ARG="FititDatabaseStack" ;;
+            network)        STACK_ARG="FixitNetworkStack" ;;
+            database)       STACK_ARG="FixitDatabaseStack" ;;
             backend)        STACK_ARG="FititBackendStack" ;;
-            frontend-infra) STACK_ARG="FititFrontendStack" ;;
+            frontend-infra) STACK_ARG="FixitFrontendStack" ;;
             all)            STACK_ARG="" ;;
           esac
           npx cdk diff $STACK_ARG || true
@@ -121,10 +121,10 @@ jobs:
         run: |
           STACK_ARG=""
           case "${{ inputs.stack }}" in
-            network)        STACK_ARG="FititNetworkStack" ;;
-            database)       STACK_ARG="FititDatabaseStack" ;;
+            network)        STACK_ARG="FixitNetworkStack" ;;
+            database)       STACK_ARG="FixitDatabaseStack" ;;
             backend)        STACK_ARG="FititBackendStack" ;;
-            frontend-infra) STACK_ARG="FititFrontendStack" ;;
+            frontend-infra) STACK_ARG="FixitFrontendStack" ;;
             all)            STACK_ARG="--all" ;;
           esac
           npx cdk deploy $STACK_ARG --require-approval never

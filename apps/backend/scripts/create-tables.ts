@@ -35,7 +35,7 @@ interface TableDefinition {
 
 const tables: TableDefinition[] = [
   {
-    name: process.env.DYNAMODB_PRODUCTS_TABLE || 'fitit-products',
+    name: process.env.DYNAMODB_PRODUCTS_TABLE || 'fixit-products',
     partitionKey: { name: 'id', type: 'S' },
     globalSecondaryIndexes: [
       {
@@ -45,7 +45,7 @@ const tables: TableDefinition[] = [
     ],
   },
   {
-    name: process.env.DYNAMODB_SERVICE_PROFILES_TABLE || 'fitit-service-profiles',
+    name: process.env.DYNAMODB_SERVICE_PROFILES_TABLE || 'fixit-service-profiles',
     partitionKey: { name: 'id', type: 'S' },
     globalSecondaryIndexes: [
       {
@@ -55,7 +55,7 @@ const tables: TableDefinition[] = [
     ],
   },
   {
-    name: process.env.DYNAMODB_SERVICE_REQUESTS_TABLE || 'fitit-service-requests',
+    name: process.env.DYNAMODB_SERVICE_REQUESTS_TABLE || 'fixit-service-requests',
     partitionKey: { name: 'id', type: 'S' },
     globalSecondaryIndexes: [
       {
@@ -69,7 +69,7 @@ const tables: TableDefinition[] = [
     ],
   },
   {
-    name: process.env.DYNAMODB_CHAT_TABLE || 'fitit-chat',
+    name: process.env.DYNAMODB_CHAT_TABLE || 'fixit-chat',
     partitionKey: { name: 'sessionId', type: 'S' },
     sortKey: { name: 'timestamp', type: 'S' },
   },

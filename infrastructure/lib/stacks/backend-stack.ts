@@ -37,12 +37,12 @@ export class BackendStack extends cdk.Stack {
     // Secrets (Optional - create manually or via CLI)
     // ============================================
     // Reference existing secret (create manually):
-    // aws secretsmanager create-secret --name /fitit/production/gemini-api-key --secret-string "your-key"
+    // aws secretsmanager create-secret --name /fixit/production/gemini-api-key --secret-string "your-key"
     const geminiSecretArn = this.node.tryGetContext('geminiSecretArn');
 
     // Log group for Lambda
     const logGroup = new logs.LogGroup(this, 'BackendLogGroup', {
-      logGroupName: '/aws/lambda/fitit-backend',
+      logGroupName: '/aws/lambda/fixit-backend',
       retention: logs.RetentionDays.ONE_MONTH,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
@@ -51,8 +51,8 @@ export class BackendStack extends cdk.Stack {
     // Lambda Function (using NodejsFunction - no Docker required)
     // ============================================
     this.lambdaFunction = new NodejsFunction(this, 'BackendLambda', {
-      functionName: 'fitit-backend',
-      description: 'FitIt Backend API - Hono.js on Lambda',
+      functionName: 'fixit-backend',
+      description: 'Fixit Backend API - Hono.js on Lambda',
       runtime: lambda.Runtime.NODEJS_20_X,
       entry: path.join(__dirname, '../../../apps/backend/src/lambda.ts'),
       handler: 'handler',
@@ -103,8 +103,8 @@ export class BackendStack extends cdk.Stack {
     // HTTP API Gateway
     // ============================================
     const httpApi = new apigatewayv2.HttpApi(this, 'BackendApi', {
-      apiName: 'fitit-backend-api',
-      description: 'FitIt Backend HTTP API',
+      apiName: 'fixit-backend-api',
+      description: 'Fixit Backend HTTP API',
       corsPreflight: {
         allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
         allowMethods: [
@@ -154,7 +154,7 @@ export class BackendStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'LambdaFunctionName', {
       value: this.lambdaFunction.functionName,
       description: 'Lambda Function Name',
-      exportName: 'FititBackendLambdaName',
+      exportName: 'FixitBackendLambdaName',
     });
 
     new cdk.CfnOutput(this, 'LambdaFunctionArn', {

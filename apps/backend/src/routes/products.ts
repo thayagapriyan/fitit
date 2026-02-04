@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { productRepository } from '../repositories/index.js';
 import { success, created, noContent, fromError, errors } from '../utils/response.js';
 import { AppError, ValidationError } from '../utils/errors.js';
-import type { ProductCategory } from '@fitit/shared-types';
+import type { ProductCategory } from '@fixit/shared-types';
 
 /**
  * Product API Routes

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { serviceProfileRepository } from '../repositories/index.js';
 import { success, created, fromError, errors } from '../utils/response.js';
 import { AppError, ValidationError } from '../utils/errors.js';
-import type { ProfessionType } from '@fitit/shared-types';
+import type { ProfessionType } from '@fixit/shared-types';
 
 /**
  * Service Profiles API Routes

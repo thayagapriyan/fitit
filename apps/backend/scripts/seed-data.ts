@@ -24,9 +24,9 @@ const client = DynamoDBDocumentClient.from(baseClient);
 
 // Table names
 const TABLES = {
-  PRODUCTS: process.env.DYNAMODB_PRODUCTS_TABLE || 'fitit-products',
-  SERVICE_PROFILES: process.env.DYNAMODB_SERVICE_PROFILES_TABLE || 'fitit-service-profiles',
-  SERVICE_REQUESTS: process.env.DYNAMODB_SERVICE_REQUESTS_TABLE || 'fitit-service-requests',
+  PRODUCTS: process.env.DYNAMODB_PRODUCTS_TABLE || 'fixit-products',
+  SERVICE_PROFILES: process.env.DYNAMODB_SERVICE_PROFILES_TABLE || 'fixit-service-profiles',
+  SERVICE_REQUESTS: process.env.DYNAMODB_SERVICE_REQUESTS_TABLE || 'fixit-service-requests',
 };
 
 // Sample Products

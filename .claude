@@ -1,7 +1,7 @@
-# FitIt Project Configuration
+# Fixit Project Configuration
 
 ## Project Overview
-FitIt is a full-stack home repair and maintenance platform built as a Turborepo monorepo. It connects users with professional service providers and allows shopping for home repair tools.
+Fixit is a full-stack home repair and maintenance platform built as a Turborepo monorepo. It connects users with professional service providers and allows shopping for home repair tools.
 
 ## Tech Stack
 
@@ -32,7 +32,7 @@ FitIt is a full-stack home repair and maintenance platform built as a Turborepo 
 
 ## Project Structure
 ```
-fitit/
+fixit/
 ├── apps/
 │   ├── backend/         # Hono.js API (Lambda)
 │   └── frontend/        # React SPA (ECS Fargate)
@@ -110,7 +110,7 @@ npm run cdk:destroy   # Destroy all stacks
 ## DynamoDB Tables
 | Table | Partition Key | Sort Key | GSIs |
 |-------|---------------|----------|------|
-| fitit-products | id | - | category-index |
-| fitit-service-profiles | id | - | profession-index |
-| fitit-service-requests | id | - | customerId-index, status-index |
-| fitit-chat | sessionId | timestamp | - |
+| fixit-products | id | - | category-index |
+| fixit-service-profiles | id | - | profession-index |
+| fixit-service-requests | id | - | customerId-index, status-index |
+| fixit-chat | sessionId | timestamp | - |

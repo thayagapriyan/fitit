@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { TableNames } from '../config/dynamodb.js';
 import { BaseRepository } from './base.repository.js';
-import type { ServiceProfile, ProfessionType, CreateServiceProfileRequest } from '@fitit/shared-types';
+import type { ServiceProfile, ProfessionType, CreateServiceProfileRequest } from '@fixit/shared-types';
 
 /**
  * Repository for ServiceProfile entity operations

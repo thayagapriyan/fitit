@@ -1,5 +1,5 @@
 /**
- * Shared TypeScript types for the Fitit platform
+ * Shared TypeScript types for the Fixit platform
  * Used by both frontend and backend
  */
 

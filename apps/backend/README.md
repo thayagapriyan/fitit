@@ -1,6 +1,6 @@
-# Fitit Backend
+# Fixit Backend
 
-Enterprise-level backend API for the Fitit home repair services platform, built with Hono.js and AWS DynamoDB.
+Enterprise-level backend API for the Fixit home repair services platform, built with Hono.js and AWS DynamoDB.
 
 ## Features
 

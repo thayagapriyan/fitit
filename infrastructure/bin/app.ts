@@ -7,7 +7,7 @@ import { BackendStack } from '../lib/stacks/backend-stack';
 import { FrontendStack } from '../lib/stacks/frontend-stack';
 
 /**
- * FitIt Infrastructure CDK App
+ * Fixit Infrastructure CDK App
  *
  * Deploys:
  * - NetworkStack: VPC, subnets, security groups
@@ -25,24 +25,24 @@ const env = {
 };
 
 // Stack naming prefix
-const prefix = app.node.tryGetContext('prefix') || 'Fitit';
+const prefix = app.node.tryGetContext('prefix') || 'Fixit';
 
 // 1. Network Stack - VPC and security groups
 const networkStack = new NetworkStack(app, `${prefix}NetworkStack`, {
   env,
-  description: 'FitIt Network Infrastructure - VPC, subnets, security groups',
+  description: 'Fixit Network Infrastructure - VPC, subnets, security groups',
 });
 
 // 2. Database Stack - DynamoDB tables
 const databaseStack = new DatabaseStack(app, `${prefix}DatabaseStack`, {
   env,
-  description: 'FitIt Database Infrastructure - DynamoDB tables',
+  description: 'Fixit Database Infrastructure - DynamoDB tables',
 });
 
 // 3. Backend Stack - Lambda + API Gateway
 const backendStack = new BackendStack(app, `${prefix}BackendStack`, {
   env,
-  description: 'FitIt Backend Infrastructure - Lambda, API Gateway',
+  description: 'Fixit Backend Infrastructure - Lambda, API Gateway',
   databaseStack,
 });
 backendStack.addDependency(databaseStack);
@@ -51,7 +51,7 @@ backendStack.addDependency(databaseStack);
 // Uses ECR repository - build and push image via scripts/deploy-frontend.ps1
 const frontendStack = new FrontendStack(app, `${prefix}FrontendStack`, {
   env,
-  description: 'FitIt Frontend Infrastructure - ECR, Fargate, ALB',
+  description: 'Fixit Frontend Infrastructure - ECR, Fargate, ALB',
   vpc: networkStack.vpc,
   backendApiUrl: backendStack.apiUrl,
 });
@@ -60,7 +60,7 @@ frontendStack.addDependency(backendStack);
 
 // Add tags to all stacks
 const tags = cdk.Tags.of(app);
-tags.add('Project', 'FitIt');
+tags.add('Project', 'Fixit');
 tags.add('ManagedBy', 'CDK');
 tags.add('Environment', process.env.ENVIRONMENT || 'production');
 

@@ -11,11 +11,11 @@ const envSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
 
   // DynamoDB Table Names
-  DYNAMODB_PRODUCTS_TABLE: z.string().default('fitit-products'),
-  DYNAMODB_SERVICE_PROFILES_TABLE: z.string().default('fitit-service-profiles'),
-  DYNAMODB_SERVICE_REQUESTS_TABLE: z.string().default('fitit-service-requests'),
-  DYNAMODB_CHAT_TABLE: z.string().default('fitit-chat'),
-  DYNAMODB_USERS_TABLE: z.string().default('fitit-users'),
+  DYNAMODB_PRODUCTS_TABLE: z.string().default('fixit-products'),
+  DYNAMODB_SERVICE_PROFILES_TABLE: z.string().default('fixit-service-profiles'),
+  DYNAMODB_SERVICE_REQUESTS_TABLE: z.string().default('fixit-service-requests'),
+  DYNAMODB_CHAT_TABLE: z.string().default('fixit-chat'),
+  DYNAMODB_USERS_TABLE: z.string().default('fixit-users'),
 
   // Gemini AI
   GEMINI_API_KEY: z.string().optional(),

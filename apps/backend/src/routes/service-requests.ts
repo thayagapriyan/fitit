@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { serviceRequestRepository } from '../repositories/index.js';
 import { success, created, fromError, errors } from '../utils/response.js';
 import { AppError, ValidationError } from '../utils/errors.js';
-import type { RequestStatus } from '@fitit/shared-types';
+import type { RequestStatus } from '@fixit/shared-types';
 
 /**
  * Service Requests API Routes

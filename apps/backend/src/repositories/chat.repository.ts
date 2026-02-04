@@ -3,7 +3,7 @@ import { PutCommand, QueryCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { dynamoClient, TableNames } from '../config/dynamodb.js';
 import { DatabaseError } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
-import type { ChatMessage } from '@fitit/shared-types';
+import type { ChatMessage } from '@fixit/shared-types';
 
 /**
  * Repository for Chat message operations

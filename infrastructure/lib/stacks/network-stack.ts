@@ -18,8 +18,8 @@ export class NetworkStack extends cdk.Stack {
     // ============================================
     // VPC (Cost-optimized - No NAT Gateway!)
     // ============================================
-    this.vpc = new ec2.Vpc(this, 'FititVpc', {
-      vpcName: 'fitit-vpc',
+    this.vpc = new ec2.Vpc(this, 'FixitVpc', {
+      vpcName: 'fixit-vpc',
       maxAzs: 2, // Cost-effective: 2 availability zones
       natGateways: 0, // No NAT Gateway - saves ~$32/month!
       subnetConfiguration: [
@@ -38,7 +38,7 @@ export class NetworkStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'VpcId', {
       value: this.vpc.vpcId,
       description: 'VPC ID',
-      exportName: 'FititVpcId',
+      exportName: 'FixitVpcId',
     });
 
     new cdk.CfnOutput(this, 'VpcCidr', {

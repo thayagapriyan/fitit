@@ -5,7 +5,7 @@ import {
   UpdateCommand,
   ScanCommand,
 } from '@aws-sdk/lib-dynamodb';
-import { UserRole } from '@fitit/shared-types';
+import { UserRole } from '@fixit/shared-types';
 import { dynamoClient } from '../config/dynamodb.js';
 import { config } from '../config/index.js';
 import { DatabaseError, NotFoundError } from '../utils/errors.js';
@@ -53,7 +53,7 @@ export interface UpdateUserInput {
 /**
  * Counter table for generating sequential customer IDs
  */
-const COUNTER_TABLE = 'fitit-counters';
+const COUNTER_TABLE = 'fixit-counters';
 const CUSTOMER_ID_COUNTER_KEY = 'customer_id';
 const CUSTOMER_ID_START = 10000000; // Start from 10000001
 

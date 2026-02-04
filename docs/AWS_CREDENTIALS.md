@@ -1,6 +1,6 @@
 # AWS Credentials Security Guide
 
-This document explains how to securely configure AWS credentials for the Fitit backend.
+This document explains how to securely configure AWS credentials for the Fixit backend.
 
 ## ⚠️ Security Best Practices
 
@@ -19,10 +19,10 @@ AWS_ACCESS_KEY_ID=AKIAxxxxxxxxxxxx
 AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # DynamoDB Tables
-DYNAMODB_PRODUCTS_TABLE=fitit-products
-DYNAMODB_SERVICE_PROFILES_TABLE=fitit-service-profiles
-DYNAMODB_SERVICE_REQUESTS_TABLE=fitit-service-requests
-DYNAMODB_CHAT_TABLE=fitit-chat
+DYNAMODB_PRODUCTS_TABLE=fixit-products
+DYNAMODB_SERVICE_PROFILES_TABLE=fixit-service-profiles
+DYNAMODB_SERVICE_REQUESTS_TABLE=fixit-service-requests
+DYNAMODB_CHAT_TABLE=fixit-chat
 
 # Gemini AI (optional)
 GEMINI_API_KEY=your_gemini_key
@@ -39,13 +39,13 @@ GEMINI_API_KEY=your_gemini_key
 winget install Amazon.AWSCLI
 
 # Configure with credentials
-aws configure --profile fitit
+aws configure --profile fixit
 ```
 
 Then set the profile in `.env`:
 
 ```bash
-AWS_PROFILE=fitit
+AWS_PROFILE=fixit
 AWS_REGION=us-east-2
 ```
 
@@ -85,7 +85,7 @@ When deployed on AWS (Lambda, ECS, EC2), use **IAM Roles** instead of access key
         "dynamodb:CreateTable",
         "dynamodb:DescribeTable"
       ],
-      "Resource": "arn:aws:dynamodb:us-east-2:*:table/fitit-*"
+      "Resource": "arn:aws:dynamodb:us-east-2:*:table/fixit-*"
     }
   ]
 }
@@ -124,8 +124,8 @@ npm run dev
 npm run create-tables
 
 # Should show:
-# ✅ Table fitit-products already exists
-# ✅ Table fitit-service-profiles already exists
+# ✅ Table fixit-products already exists
+# ✅ Table fixit-service-profiles already exists
 # ...
 ```
 

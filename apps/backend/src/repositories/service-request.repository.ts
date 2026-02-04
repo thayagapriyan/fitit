@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { TableNames } from '../config/dynamodb.js';
 import { BaseRepository } from './base.repository.js';
-import type { ServiceRequest, RequestStatus, CreateServiceRequestRequest, UpdateServiceRequestStatusRequest } from '@fitit/shared-types';
+import type { ServiceRequest, RequestStatus, CreateServiceRequestRequest, UpdateServiceRequestStatusRequest } from '@fixit/shared-types';
 
 /**
  * Repository for ServiceRequest entity operations

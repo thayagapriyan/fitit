@@ -6,7 +6,7 @@ import { chatRepository } from '../repositories/index.js';
 import { success, fromError, errors } from '../utils/response.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
-import type { AIResponse } from '@fitit/shared-types';
+import type { AIResponse } from '@fixit/shared-types';
 
 /**
  * AI API Routes
@@ -26,7 +26,7 @@ const aiRequestSchema = z.object({
   sessionId: z.string().optional(),
 });
 
-// System prompt for the Fitit AI assistant
+// System prompt for the Fixit AI assistant
 const SYSTEM_PROMPT = `You are a helpful AI assistant for FixitHub, a home repair and maintenance platform. 
 You help users with:
 - DIY repair guidance and step-by-step instructions

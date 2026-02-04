@@ -1,5 +1,5 @@
 {
-  "name": "@fitit/backend",
+  "name": "@fixit/backend",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
@@ -19,7 +19,7 @@
     "hono": "^4.6.0",
     "uuid": "^11.0.0",
     "zod": "^3.24.0",
-    "@fitit/shared-types": "*"
+    "@fixit/shared-types": "*"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",

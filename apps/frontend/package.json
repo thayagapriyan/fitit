@@ -1,5 +1,5 @@
 {
-  "name": "@fitit/frontend",
+  "name": "@fixit/frontend",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "clean": "rimraf dist node_modules/.vite"
   },
   "dependencies": {
-    "@fitit/shared-types": "*",
+    "@fixit/shared-types": "*",
     "@google/genai": "^1.33.0",
     "@supabase/supabase-js": "^2.93.3",
     "lucide-react": "^0.561.0",

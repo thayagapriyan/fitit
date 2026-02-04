@@ -7,7 +7,7 @@ import { logger } from './utils/index.js';
 import { AppError, fromError, errors } from './utils/index.js';
 
 /**
- * FitIt Backend Lambda Handler
+ * Fixit Backend Lambda Handler
  *
  * This is the Lambda-optimized entry point for the Hono.js API.
  * Uses hono/aws-lambda adapter for API Gateway integration.
@@ -54,7 +54,7 @@ app.get('/health', (c) => {
 // Root endpoint
 app.get('/', (c) => {
   return c.json({
-    name: 'FitIt Backend API',
+    name: 'Fixit Backend API',
     version: '1.0.0',
     status: 'running',
     runtime: 'lambda',

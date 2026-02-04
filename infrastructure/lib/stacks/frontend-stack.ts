@@ -43,7 +43,7 @@ export class FrontendStack extends cdk.Stack {
     // ECR Repository
     // ============================================
     this.ecrRepository = new ecr.Repository(this, "FrontendRepo", {
-      repositoryName: "fitit-frontend",
+      repositoryName: "fixit-frontend",
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       imageScanOnPush: true,
       lifecycleRules: [
@@ -59,7 +59,7 @@ export class FrontendStack extends cdk.Stack {
     // ECS Cluster
     // ============================================
     const cluster = new ecs.Cluster(this, "FrontendCluster", {
-      clusterName: "fitit-frontend-cluster",
+      clusterName: "fixit-frontend-cluster",
       vpc,
       containerInsightsV2: ecs.ContainerInsights.ENABLED,
     });
@@ -70,12 +70,12 @@ export class FrontendStack extends cdk.Stack {
     const taskDefinition = new ecs.FargateTaskDefinition(this, "FrontendTask", {
       memoryLimitMiB: 512,
       cpu: 256,
-      family: "fitit-frontend",
+      family: "fixit-frontend",
     });
 
     // Log group for container logs
     const logGroup = new logs.LogGroup(this, "FrontendLogGroup", {
-      logGroupName: "/ecs/fitit-frontend",
+      logGroupName: "/ecs/fixit-frontend",
       retention: logs.RetentionDays.ONE_MONTH,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
@@ -83,10 +83,10 @@ export class FrontendStack extends cdk.Stack {
     // Container definition - Use ECR repository image
     // Image must be pushed via build-and-push script before deploying
     const container = taskDefinition.addContainer("FrontendContainer", {
-      containerName: "fitit-frontend",
+      containerName: "fixit-frontend",
       image: ecs.ContainerImage.fromEcrRepository(this.ecrRepository, imageTag),
       logging: ecs.LogDrivers.awsLogs({
-        streamPrefix: "fitit-frontend",
+        streamPrefix: "fixit-frontend",
         logGroup,
       }),
       portMappings: [
@@ -116,7 +116,7 @@ export class FrontendStack extends cdk.Stack {
       {
         cluster,
         taskDefinition,
-        serviceName: "fitit-frontend-service",
+        serviceName: "fixit-frontend-service",
         publicLoadBalancer: true,
         desiredCount: 1,
         assignPublicIp: true,
@@ -186,7 +186,7 @@ export class FrontendStack extends cdk.Stack {
     new cdk.CfnOutput(this, "EcrRepositoryUri", {
       value: this.ecrRepository.repositoryUri,
       description: "ECR Repository URI",
-      exportName: "FititFrontendEcrUri",
+      exportName: "FixitFrontendEcrUri",
     });
 
     new cdk.CfnOutput(this, "EcsClusterName", {

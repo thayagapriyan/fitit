@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import type { ApiSuccessResponse, ApiErrorResponse } from '@fitit/shared-types';
+import type { ApiSuccessResponse, ApiErrorResponse } from '@fixit/shared-types';
 import { AppError } from './errors.js';
 
 /**

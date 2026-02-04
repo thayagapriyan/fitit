@@ -33,9 +33,9 @@ permissions:
 
 env:
   AWS_REGION: us-east-2
-  ECR_REPOSITORY: fitit-frontend
-  ECS_CLUSTER: fitit-frontend-cluster
-  ECS_SERVICE: fitit-frontend-service
+  ECR_REPOSITORY: fixit-frontend
+  ECS_CLUSTER: fixit-frontend-cluster
+  ECS_SERVICE: fixit-frontend-service
 
 jobs:
   build-and-deploy:

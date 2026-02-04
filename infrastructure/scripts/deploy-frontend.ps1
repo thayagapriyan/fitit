@@ -1,5 +1,5 @@
 # ============================================
-# FitIt Frontend - Production Deployment Script
+# Fixit Frontend - Production Deployment Script
 # ============================================
 # This script handles the complete deployment:
 # 1. Builds frontend locally (avoids QEMU/esbuild issues)
@@ -24,7 +24,7 @@ function Write-Success { param($msg) Write-Host "  $msg" -ForegroundColor Green 
 function Write-Info { param($msg) Write-Host "  $msg" -ForegroundColor Gray }
 
 Write-Host "`n========================================" -ForegroundColor Cyan
-Write-Host "  FitIt Frontend - Production Deploy" -ForegroundColor Cyan
+Write-Host "  Fixit Frontend - Production Deploy" -ForegroundColor Cyan
 Write-Host "========================================`n" -ForegroundColor Cyan
 
 # ============================================
@@ -73,7 +73,7 @@ $AccountId = aws sts get-caller-identity --query Account --output text
 if ($LASTEXITCODE -ne 0) { throw "Failed to get AWS Account ID. Check AWS credentials." }
 
 $EcrUri = "$AccountId.dkr.ecr.$Region.amazonaws.com"
-$RepoName = "fitit-frontend"
+$RepoName = "fixit-frontend"
 $FullImageUri = "$EcrUri/${RepoName}:$ImageTag"
 
 Write-Info "Account: $AccountId, Region: $Region"
@@ -142,8 +142,8 @@ Write-Success "Pushed: $FullImageUri"
 # ============================================
 Write-Step "6/6" "Updating ECS service..."
 
-$ClusterName = "fitit-frontend-cluster"
-$ServiceName = "fitit-frontend-service"
+$ClusterName = "fixit-frontend-cluster"
+$ServiceName = "fixit-frontend-service"
 
 # Force new deployment to pull the updated image
 aws ecs update-service `
@@ -162,7 +162,7 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "  aws ecs describe-services --cluster $ClusterName --services $ServiceName --query 'services[0].deployments'" -ForegroundColor Gray
     
     Write-Host "`nFrontend URL:" -ForegroundColor Cyan
-    $url = aws cloudformation describe-stacks --stack-name FititFrontendStack --query "Stacks[0].Outputs[?OutputKey=='LoadBalancerUrl'].OutputValue" --output text
+    $url = aws cloudformation describe-stacks --stack-name FixitFrontendStack --query "Stacks[0].Outputs[?OutputKey=='LoadBalancerUrl'].OutputValue" --output text
     Write-Host "  $url" -ForegroundColor White
 }
 else {

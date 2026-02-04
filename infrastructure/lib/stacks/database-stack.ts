@@ -5,7 +5,7 @@ import { Construct } from 'constructs';
 /**
  * DatabaseStack
  *
- * Creates DynamoDB tables for the FitIt application:
+ * Creates DynamoDB tables for the Fixit application:
  * - Products table (with category GSI)
  * - Service Profiles table (with profession GSI)
  * - Service Requests table (with customerId and status GSIs)
@@ -28,7 +28,7 @@ export class DatabaseStack extends cdk.Stack {
     // Products Table
     // ============================================
     this.productsTable = new dynamodb.Table(this, 'ProductsTable', {
-      tableName: 'fitit-products',
+      tableName: 'fixit-products',
       partitionKey: {
         name: 'id',
         type: dynamodb.AttributeType.STRING,
@@ -51,7 +51,7 @@ export class DatabaseStack extends cdk.Stack {
     // Service Profiles Table
     // ============================================
     this.serviceProfilesTable = new dynamodb.Table(this, 'ServiceProfilesTable', {
-      tableName: 'fitit-service-profiles',
+      tableName: 'fixit-service-profiles',
       partitionKey: {
         name: 'id',
         type: dynamodb.AttributeType.STRING,
@@ -106,7 +106,7 @@ export class DatabaseStack extends cdk.Stack {
     // Chat Table
     // ============================================
     this.chatTable = new dynamodb.Table(this, 'ChatTable', {
-      tableName: 'fitit-chat',
+      tableName: 'fixit-chat',
       partitionKey: {
         name: 'sessionId',
         type: dynamodb.AttributeType.STRING,
@@ -169,7 +169,7 @@ export class DatabaseStack extends cdk.Stack {
     // Counters Table (for atomic ID generation)
     // ============================================
     this.countersTable = new dynamodb.Table(this, 'CountersTable', {
-      tableName: 'fitit-counters',
+      tableName: 'fixit-counters',
       partitionKey: {
         name: 'id',
         type: dynamodb.AttributeType.STRING,
@@ -184,37 +184,37 @@ export class DatabaseStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'ProductsTableName', {
       value: this.productsTable.tableName,
       description: 'Products DynamoDB Table Name',
-      exportName: 'FititProductsTableName',
+      exportName: 'FixitProductsTableName',
     });
 
     new cdk.CfnOutput(this, 'ServiceProfilesTableName', {
       value: this.serviceProfilesTable.tableName,
       description: 'Service Profiles DynamoDB Table Name',
-      exportName: 'FititServiceProfilesTableName',
+      exportName: 'FixitServiceProfilesTableName',
     });
 
     new cdk.CfnOutput(this, 'ServiceRequestsTableName', {
       value: this.serviceRequestsTable.tableName,
       description: 'Service Requests DynamoDB Table Name',
-      exportName: 'FititServiceRequestsTableName',
+      exportName: 'FixitServiceRequestsTableName',
     });
 
     new cdk.CfnOutput(this, 'ChatTableName', {
       value: this.chatTable.tableName,
       description: 'Chat DynamoDB Table Name',
-      exportName: 'FititChatTableName',
+      exportName: 'FixitChatTableName',
     });
 
     new cdk.CfnOutput(this, 'UsersTableName', {
       value: this.usersTable.tableName,
       description: 'Users DynamoDB Table Name',
-      exportName: 'FititUsersTableName',
+      exportName: 'FixitUsersTableName',
     });
 
     new cdk.CfnOutput(this, 'CountersTableName', {
       value: this.countersTable.tableName,
       description: 'Counters DynamoDB Table Name',
-      exportName: 'FititCountersTableName',
+      exportName: 'FixitCountersTableName',
     });
   }
 }
